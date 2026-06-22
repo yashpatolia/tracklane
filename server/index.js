@@ -12,8 +12,7 @@ const PORT = 3001;
 const COLUMNS = ['company', 'role', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'platform', 'link', 'notes'];
 
 const db = new DatabaseSync(DB_FILE);
-db.exec('PRAGMA journal_mode = WAL');
-db.exec('PRAGMA synchronous = NORMAL');
+db.exec('PRAGMA journal_mode = DELETE');
 runMigrations(db, MIGRATIONS_DIR);
 
 const app = express();
