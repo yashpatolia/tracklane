@@ -16,12 +16,18 @@ export default function Header() {
   }, []);
 
   return (
-    <header className="board-header">
-      <div>
-        <div className="board-title">Internship Departures</div>
-        <div className="board-subtitle">Yash Patolia &middot; January 2027 start &middot; McMaster SWE Co-op</div>
+    <header className="app-header">
+      <div className="app-header__left">
+        <div className="live-dot">
+          <span className="live-dot__ring" />
+          <span className="live-dot__core" />
+        </div>
+        <div>
+          <h1 className="app-title">Internship Applications</h1>
+          <p className="app-meta">Yash Patolia &middot; McMaster SWE Co-op &middot; January 2027</p>
+        </div>
       </div>
-      <div className="board-clock">
+      <div className="app-clock">
         <span>{time}</span>
         <span className="zone">Local time</span>
       </div>

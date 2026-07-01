@@ -21,6 +21,15 @@ export function slug(s) {
   return s.toLowerCase().replace(/\s+/g, '-');
 }
 
+export function companyDomain(name) {
+  if (!name) return '';
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, '')
+    .trim()
+    .split(/\s+/)[0] + '.com';
+}
+
 export function fmtDate(d) {
   if (!d) return null;
   const [, m, day] = d.split('-');

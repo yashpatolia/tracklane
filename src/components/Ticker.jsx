@@ -5,7 +5,7 @@ function TickerItems({ applied }) {
   return applied.map((d, i) => (
     <span className="ticker-item" key={i}>
       {i > 0 && <span className="ticker-sep">&bull;</span>}
-      <strong>{d.company}</strong> &mdash; applied {fmtDate(d.applied)}
+      <strong>{d.company}</strong> - applied {fmtDate(d.applied)}
     </span>
   ));
 }
@@ -24,7 +24,7 @@ export default function Ticker({ applications }) {
       <div className="ticker">
         <span className="ticker-label">Recently applied</span>
         <div className="ticker-track idle">
-          <span className="ticker-item">No applications logged yet &mdash; add one to start tracking.</span>
+          <span className="ticker-item">No applications logged yet - add one to start tracking.</span>
         </div>
       </div>
     );

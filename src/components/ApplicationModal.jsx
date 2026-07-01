@@ -92,7 +92,7 @@ export default function ApplicationModal({ initialData, isEditing, onSave, onCan
             <label>
               Application Status Link{' '}
               <span style={{ fontWeight: 400, textTransform: 'none', letterSpacing: 0, color: 'var(--text-dim)' }}>
-                (optional &mdash; Workday, Greenhouse, etc.)
+                (optional: Workday, Greenhouse, etc.)
               </span>
             </label>
             <input type="url" placeholder="https://wd3.myworkdayjobs.com/..." value={form.link} onChange={set('link')} />

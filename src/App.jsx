@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { fetchApplications, saveApplications } from './api.js';
 import Header from './components/Header.jsx';
-import Ticker from './components/Ticker.jsx';
+import Pipeline, { REJECTED_SENTINEL } from './components/Pipeline.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
@@ -11,6 +11,7 @@ export default function App() {
   const [loaded, setLoaded] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
     fetchApplications()
@@ -22,16 +23,15 @@ export default function App() {
       .finally(() => setLoaded(true));
   }, []);
 
-  const openAdd = () => {
-    setEditingIndex(null);
-    setModalOpen(true);
-  };
+  const filteredApplications = useMemo(() => {
+    if (!statusFilter) return applications;
+    if (statusFilter === REJECTED_SENTINEL)
+      return applications.filter((a) => a.status === 'Rejected' || a.status === 'Withdrawn');
+    return applications.filter((a) => a.status === statusFilter);
+  }, [applications, statusFilter]);
 
-  const openEdit = (index) => {
-    setEditingIndex(index);
-    setModalOpen(true);
-  };
-
+  const openAdd = () => { setEditingIndex(null); setModalOpen(true); };
+  const openEdit = (index) => { setEditingIndex(index); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
 
   const persist = async (next) => {
@@ -55,24 +55,45 @@ export default function App() {
   };
 
   const handleQuickDelete = async (index) => {
-    if (!confirm(`Delete ${applications[index].company}?`)) return;
-    const next = applications.filter((_, i) => i !== index);
+    const app = filteredApplications[index];
+    const realIndex = applications.indexOf(app);
+    if (!confirm(`Delete ${app.company}?`)) return;
+    const next = applications.filter((_, i) => i !== realIndex);
     await persist(next);
+  };
+
+  const handleEdit = (index) => {
+    const app = filteredApplications[index];
+    const realIndex = applications.indexOf(app);
+    openEdit(realIndex);
   };
 
   return (
     <>
       <Header />
-      <Ticker applications={applications} />
       <Stats applications={applications} />
+      <Pipeline
+        applications={applications}
+        activeFilter={statusFilter}
+        onFilterChange={setStatusFilter}
+      />
       <div className="main">
         <div className="toolbar">
-          <h2>Applications</h2>
+          <h2>
+            Applications
+            {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
+          </h2>
           <button className="btn-add" onClick={openAdd}>
             + New Entry
           </button>
         </div>
-        {loaded && <ApplicationsTable applications={applications} onEdit={openEdit} onDelete={handleQuickDelete} />}
+        {loaded && (
+          <ApplicationsTable
+            applications={filteredApplications}
+            onEdit={handleEdit}
+            onDelete={handleQuickDelete}
+          />
+        )}
       </div>
       {modalOpen && (
         <ApplicationModal
