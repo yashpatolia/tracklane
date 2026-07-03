@@ -1,0 +1,8 @@
+services:
+  tracklane:
+    build: .
+    image: tracklane:latest
+    container_name: tracklane
+    restart: unless-stopped
+    network_mode: host
+    env_file: .env
