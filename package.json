@@ -1,5 +1,5 @@
 {
-  "name": "internship-departures",
+  "name": "tracklane",
   "private": true,
   "version": "0.0.1",
   "type": "module",
@@ -8,16 +8,27 @@
     "dev:client": "vite",
     "dev:server": "node server/index.js",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "node server/db/migrate.js",
+    "db:import-sqlite": "node server/db/import-sqlite.js"
   },
   "dependencies": {
+    "connect-pg-simple": "^10.0.0",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.45.2",
     "express": "^4.21.0",
+    "express-session": "^1.19.0",
+    "passport": "^0.7.0",
+    "passport-google-oauth20": "^2.0.0",
+    "pg": "^8.22.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",
     "concurrently": "^9.0.0",
+    "drizzle-kit": "^0.31.10",
     "vite": "^6.0.0"
   }
 }

@@ -5,9 +5,7 @@ export default {
   server: {
     proxy: {
       '/api': 'http://localhost:3001',
-    },
-    watch: {
-      ignored: ['**/tracker.sqlite*'],
+      '/auth': 'http://localhost:3001',
     },
   },
 };
