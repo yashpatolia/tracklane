@@ -24,7 +24,7 @@ export default function Header({ user, onLogout }) {
         </div>
         <div>
           <h1 className="app-title">Tracklane</h1>
-          <p className="app-meta">Yash Patolia &middot; McMaster SWE Co-op</p>
+          <p className="app-meta">{user?.name || user?.email}</p>
         </div>
       </div>
       <div className="app-header__right">

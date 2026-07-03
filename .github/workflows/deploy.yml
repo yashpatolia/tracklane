@@ -15,7 +15,7 @@ jobs:
           username: ${{ secrets.VPS_USERNAME }}
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
-            cd ~/apps/tracklane
+            cd ~/tracklane
             git pull origin master
             docker compose up -d --build
             docker image prune -f
