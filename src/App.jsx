@@ -1,12 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fetchApplications, saveApplications } from './api.js';
+import { fetchApplications, fetchMe, logout, saveApplications } from './api.js';
 import Header from './components/Header.jsx';
+import LoginPanel from './components/LoginPanel.jsx';
 import Pipeline, { REJECTED_SENTINEL } from './components/Pipeline.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false);
   const [applications, setApplications] = useState([]);
   const [loaded, setLoaded] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
@@ -14,6 +17,14 @@ export default function App() {
   const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
+    fetchMe()
+      .then(setUser)
+      .catch((err) => console.error(err))
+      .finally(() => setAuthChecked(true));
+  }, []);
+
+  useEffect(() => {
+    if (!user) return;
     fetchApplications()
       .then(setApplications)
       .catch((err) => {
@@ -21,7 +32,14 @@ export default function App() {
         alert('Could not reach the API server. Run "npm run dev:server" (or "npm run dev" for both) and reload.');
       })
       .finally(() => setLoaded(true));
-  }, []);
+  }, [user]);
+
+  const handleLogout = async () => {
+    await logout();
+    setUser(null);
+    setApplications([]);
+    setLoaded(false);
+  };
 
   const filteredApplications = useMemo(() => {
     if (!statusFilter) return applications;
@@ -68,9 +86,12 @@ export default function App() {
     openEdit(realIndex);
   };
 
+  if (!authChecked) return null;
+  if (!user) return <LoginPanel />;
+
   return (
     <>
-      <Header />
+      <Header user={user} onLogout={handleLogout} />
       <Stats applications={applications} />
       <Pipeline
         applications={applications}

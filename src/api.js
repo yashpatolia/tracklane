@@ -1,3 +1,14 @@
+export async function fetchMe() {
+  const res = await fetch('/api/me');
+  if (!res.ok) throw new Error('Failed to load session');
+  const { user } = await res.json();
+  return user;
+}
+
+export async function logout() {
+  await fetch('/auth/logout', { method: 'POST' });
+}
+
 export async function fetchApplications() {
   const res = await fetch('/api/applications');
   if (!res.ok) throw new Error('Failed to load applications');

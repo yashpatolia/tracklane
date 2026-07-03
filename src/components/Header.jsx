@@ -7,7 +7,7 @@ function formatClock(date) {
   return `${hh}:${mm}:${ss}`;
 }
 
-export default function Header() {
+export default function Header({ user, onLogout }) {
   const [time, setTime] = useState(() => formatClock(new Date()));
 
   useEffect(() => {
@@ -23,13 +23,20 @@ export default function Header() {
           <span className="live-dot__core" />
         </div>
         <div>
-          <h1 className="app-title">Internship Applications</h1>
-          <p className="app-meta">Yash Patolia &middot; McMaster SWE Co-op &middot; January 2027</p>
+          <h1 className="app-title">Tracklane</h1>
+          <p className="app-meta">Yash Patolia &middot; McMaster SWE Co-op</p>
         </div>
       </div>
-      <div className="app-clock">
-        <span>{time}</span>
-        <span className="zone">Local time</span>
+      <div className="app-header__right">
+        <div className="app-clock">
+          <span>{time}</span>
+          <span className="zone">Local time</span>
+        </div>
+        {user && (
+          <button className="btn-logout" onClick={onLogout} title={user.email}>
+            Sign out
+          </button>
+        )}
       </div>
     </header>
   );
