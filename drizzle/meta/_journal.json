@@ -8,6 +8,20 @@
       "when": 1783083430218,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783083430219,
+      "tag": "0001_add_season",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783083430220,
+      "tag": "0002_add_tracking_fields",
+      "breakpoints": true
     }
   ]
 }

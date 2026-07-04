@@ -13,7 +13,8 @@ import { applications, users } from './schema.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SQLITE_FILE = path.join(__dirname, '..', '..', 'tracker.sqlite');
-const COLUMNS = ['company', 'role', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'platform', 'link', 'notes'];
+const SOURCE_COLUMNS = ['company', 'role', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'platform', 'link', 'notes'];
+const COLUMNS = ['company', 'role', 'season', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'platform', 'link', 'nextAction', 'nextActionDue', 'updatedAt', 'notes'];
 
 const email = process.argv[2];
 if (!email) {
@@ -28,12 +29,17 @@ if (!user) {
 }
 
 const sqlite = new DatabaseSync(SQLITE_FILE);
-const rows = sqlite.prepare(`SELECT ${COLUMNS.join(', ')} FROM applications ORDER BY id`).all();
+const rows = sqlite.prepare(`SELECT ${SOURCE_COLUMNS.join(', ')} FROM applications ORDER BY id`).all();
 
 for (const row of rows) {
   await db.insert(applications).values({
     userId: user.id,
-    ...Object.fromEntries(COLUMNS.map((c) => [c, row[c] ?? ''])),
+    ...Object.fromEntries(COLUMNS.map((c) => {
+      if (c === 'season') return [c, ''];
+      if (c === 'nextAction' || c === 'nextActionDue') return [c, ''];
+      if (c === 'updatedAt') return [c, new Date().toISOString()];
+      return [c, row[c] ?? ''];
+    })),
   });
 }
 

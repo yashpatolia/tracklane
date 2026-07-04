@@ -14,6 +14,7 @@ export const applications = pgTable('applications', {
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   company: text('company').notNull(),
   role: text('role').default(''),
+  season: text('season').default(''),
   location: text('location').default(''),
   stack: text('stack').default(''),
   status: text('status').default('Not Applied'),
@@ -24,5 +25,8 @@ export const applications = pgTable('applications', {
   comp: text('comp').default(''),
   platform: text('platform').default(''),
   link: text('link').default(''),
+  nextAction: text('next_action').default(''),
+  nextActionDue: text('next_action_due').default(''),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
   notes: text('notes').default(''),
 });

@@ -6,33 +6,51 @@ import Pipeline, { REJECTED_SENTINEL } from './components/Pipeline.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
+import { advanceStatus } from './utils/applications.js';
 
-export default function App() {
-  const [user, setUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false);
-  const [applications, setApplications] = useState([]);
-  const [loaded, setLoaded] = useState(false);
+export default function App({ initialUser = null, initialApplications = null }) {
+  const [user, setUser] = useState(initialUser);
+  const [authChecked, setAuthChecked] = useState(Boolean(initialUser));
+  const [applications, setApplications] = useState(initialApplications ?? []);
+  const [loaded, setLoaded] = useState(initialApplications !== null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
 
   useEffect(() => {
-    fetchMe()
+    if (initialUser) return;
+    Promise.resolve(fetchMe())
       .then(setUser)
       .catch((err) => console.error(err))
       .finally(() => setAuthChecked(true));
-  }, []);
+  }, [initialUser]);
 
   useEffect(() => {
     if (!user) return;
-    fetchApplications()
+    if (initialApplications !== null) return;
+    Promise.resolve(fetchApplications())
       .then(setApplications)
       .catch((err) => {
         console.error(err);
         alert('Could not reach the API server. Run "npm run dev:server" (or "npm run dev" for both) and reload.');
       })
       .finally(() => setLoaded(true));
-  }, [user]);
+  }, [user, initialApplications]);
+
+  useEffect(() => {
+    const onKeyDown = (e) => {
+      const target = e.target;
+      const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target?.isContentEditable;
+      if (isTyping) return;
+      if ((e.metaKey || e.ctrlKey) && e.altKey && e.key.toLowerCase() === 'n') {
+        e.preventDefault();
+        setEditingIndex(null);
+        setModalOpen(true);
+      }
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -48,6 +66,8 @@ export default function App() {
     return applications.filter((a) => a.status === statusFilter);
   }, [applications, statusFilter]);
 
+  const activeFilterLabel = statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter;
+
   const openAdd = () => { setEditingIndex(null); setModalOpen(true); };
   const openEdit = (index) => { setEditingIndex(index); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
@@ -58,10 +78,30 @@ export default function App() {
   };
 
   const handleSave = async (entry) => {
+    const stamped = { ...entry, updatedAt: new Date().toISOString() };
     const next = [...applications];
-    editingIndex !== null ? (next[editingIndex] = entry) : next.push(entry);
+    editingIndex !== null ? (next[editingIndex] = stamped) : next.push(stamped);
     await persist(next);
     closeModal();
+  };
+
+  const handleAdvanceStatus = async (index) => {
+    const app = filteredApplications[index];
+    const realIndex = applications.indexOf(app);
+    if (realIndex === -1) return;
+
+    const current = applications[realIndex];
+    const nextStatus = advanceStatus(current.status);
+    if (nextStatus === current.status) return;
+
+    const next = [...applications];
+    next[realIndex] = {
+      ...current,
+      status: nextStatus,
+      applied: current.applied || new Date().toISOString().slice(0, 10),
+      updatedAt: new Date().toISOString(),
+    };
+    await persist(next);
   };
 
   const handleDeleteEditing = async () => {
@@ -113,6 +153,9 @@ export default function App() {
             applications={filteredApplications}
             onEdit={handleEdit}
             onDelete={handleQuickDelete}
+            onAdvanceStatus={handleAdvanceStatus}
+            activeFilterLabel={activeFilterLabel}
+            onFilterClear={() => setStatusFilter(null)}
           />
         )}
       </div>
@@ -120,6 +163,8 @@ export default function App() {
         <ApplicationModal
           initialData={editingIndex !== null ? applications[editingIndex] : null}
           isEditing={editingIndex !== null}
+          existingApplications={applications}
+          editingIndex={editingIndex}
           onSave={handleSave}
           onCancel={closeModal}
           onDelete={handleDeleteEditing}
