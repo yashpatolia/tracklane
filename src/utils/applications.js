@@ -5,12 +5,28 @@ function norm(value) {
 }
 
 function dayKey(date) {
-  return new Date(date).toISOString().slice(0, 10);
+  const parsed = parseDate(date);
+  if (!parsed) return '';
+  const year = parsed.getFullYear();
+  const month = String(parsed.getMonth() + 1).padStart(2, '0');
+  const day = String(parsed.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 }
 
 function parseDate(date) {
+  if (typeof date === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(date)) {
+    const [year, month, day] = date.split('-').map(Number);
+    return new Date(year, month - 1, day);
+  }
+
   const parsed = new Date(date);
   return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function dayNumber(date) {
+  const parsed = parseDate(date);
+  if (!parsed) return null;
+  return Date.UTC(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
 }
 
 export function advanceStatus(status) {
@@ -48,7 +64,10 @@ export function formatRelativeStamp(updatedAt, now = new Date()) {
   const updatedDay = dayKey(updated);
   if (today === updatedDay) return 'Updated today';
 
-  const diffDays = Math.max(1, Math.floor((new Date(dayKey(now)) - new Date(updatedDay)) / (24 * 60 * 60 * 1000)));
+  const todayStart = dayNumber(now);
+  const updatedStart = dayNumber(updated);
+  if (todayStart === null || updatedStart === null) return '';
+  const diffDays = Math.max(1, Math.round((todayStart - updatedStart) / (24 * 60 * 60 * 1000)));
   if (diffDays < 7) return `Updated ${diffDays}d ago`;
 
   return `Updated ${updated.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`;
@@ -58,9 +77,10 @@ export function getDeadlineState(nextActionDue, now = new Date()) {
   const due = parseDate(nextActionDue);
   if (!due) return null;
 
-  const dueDay = new Date(dayKey(due));
-  const today = new Date(dayKey(now));
-  const diffDays = Math.floor((dueDay - today) / (24 * 60 * 60 * 1000));
+  const dueDay = dayNumber(due);
+  const today = dayNumber(now);
+  if (dueDay === null || today === null) return null;
+  const diffDays = Math.round((dueDay - today) / (24 * 60 * 60 * 1000));
 
   if (diffDays < 0) {
     return { tone: 'overdue', label: `Overdue ${Math.abs(diffDays)}d` };

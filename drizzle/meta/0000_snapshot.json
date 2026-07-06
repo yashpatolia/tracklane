@@ -37,7 +37,7 @@
           "name": "season",
           "type": "text",
           "primaryKey": false,
-          "notNull": false,
+          "notNull": true,
           "default": "''"
         },
         "location": {

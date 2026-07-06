@@ -42,13 +42,22 @@ export default function ApplicationModal({ initialData, isEditing, existingAppli
     };
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
-  }, [onCancel, form, existingApplications, editingIndex]);
+  }, [onCancel, onSave, form, existingApplications, editingIndex]);
 
   const set = (field) => (e) => setForm((f) => ({ ...f, [field]: e.target.value }));
   const setSeason = (season) => setForm((f) => ({ ...f, season }));
+  const localDayString = () => {
+    const now = new Date();
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  };
 
   const handleSave = () => {
-    const entry = { ...form, company: form.company.trim(), role: form.role.trim() };
+    const entry = {
+      ...form,
+      company: form.company.trim(),
+      role: form.role.trim(),
+      applied: form.status !== 'Not Applied' && !form.applied ? localDayString() : form.applied,
+    };
     const result = validateApplication(entry, existingApplications, editingIndex);
     if (!result.ok) {
       setError(result.errors[0]);

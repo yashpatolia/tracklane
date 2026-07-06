@@ -8,6 +8,10 @@ import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
 import { advanceStatus } from './utils/applications.js';
 
+function localDayString(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
 export default function App({ initialUser = null, initialApplications = null }) {
   const [user, setUser] = useState(initialUser);
   const [authChecked, setAuthChecked] = useState(Boolean(initialUser));
@@ -98,7 +102,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
     next[realIndex] = {
       ...current,
       status: nextStatus,
-      applied: current.applied || new Date().toISOString().slice(0, 10),
+      applied: current.applied || localDayString(),
       updatedAt: new Date().toISOString(),
     };
     await persist(next);
