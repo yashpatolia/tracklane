@@ -4,19 +4,21 @@ import { describe, expect, it, vi } from 'vitest';
 import ApplicationsTable from './ApplicationsTable.jsx';
 
 describe('ApplicationsTable', () => {
-  it('advances status by clicking the status chip', async () => {
+  it('uses the original row index after sorting for edit, status, and delete actions', async () => {
     const user = userEvent.setup();
+    const onEdit = vi.fn();
     const onAdvanceStatus = vi.fn();
+    const onDelete = vi.fn();
 
     render(
       <ApplicationsTable
         applications={[
           {
-            company: 'Shopify',
+            company: 'Acme',
             role: 'Intern',
             season: 'Summer',
             status: 'Applied',
-            stack: 'React',
+            stack: 'Vue',
             comp: '32',
             applied: '2026-07-04',
             nextAction: '',
@@ -24,15 +26,38 @@ describe('ApplicationsTable', () => {
             updatedAt: '2026-07-04T00:00:00.000Z',
             notes: '',
           },
+          {
+            company: 'Beta',
+            role: 'Intern',
+            season: 'Fall',
+            status: 'Interview',
+            stack: 'React',
+            comp: '34',
+            applied: '2026-07-03',
+            nextAction: '',
+            nextActionDue: '',
+            updatedAt: '2026-07-03T00:00:00.000Z',
+            notes: '',
+          },
         ]}
-        onEdit={vi.fn()}
-        onDelete={vi.fn()}
+        onEdit={onEdit}
+        onDelete={onDelete}
         onAdvanceStatus={onAdvanceStatus}
       />
     );
 
-    await user.click(screen.getByRole('button', { name: /advance status: applied/i }));
-    expect(onAdvanceStatus).toHaveBeenCalledWith(0);
+    const sortButton = screen.getByRole('button', { name: /sort by stack/i });
+    sortButton.focus();
+    await user.keyboard('{Enter}');
+
+    await user.click(screen.getByText('Beta'));
+    expect(onEdit).toHaveBeenCalledWith(1);
+
+    await user.click(screen.getByRole('button', { name: /advance status: interview/i }));
+    expect(onAdvanceStatus).toHaveBeenCalledWith(1);
+
+    await user.click(screen.getAllByTitle('Delete')[0]);
+    expect(onDelete).toHaveBeenCalledWith(1);
   });
 
   it('lets users hide low-value columns', async () => {
@@ -62,7 +87,7 @@ describe('ApplicationsTable', () => {
     );
 
     expect(screen.getByText('React')).toBeInTheDocument();
-    await user.click(screen.getByRole('button', { name: /stack/i }));
+    await user.click(screen.getByRole('button', { name: 'Stack', pressed: true }));
     expect(screen.queryByText('React')).not.toBeInTheDocument();
   });
 

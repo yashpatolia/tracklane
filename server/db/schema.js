@@ -14,7 +14,7 @@ export const applications = pgTable('applications', {
   userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   company: text('company').notNull(),
   role: text('role').default(''),
-  season: text('season').default(''),
+  season: text('season').default('').notNull(),
   location: text('location').default(''),
   stack: text('stack').default(''),
   status: text('status').default('Not Applied'),

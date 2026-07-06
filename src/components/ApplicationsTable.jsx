@@ -78,10 +78,11 @@ export default function ApplicationsTable({
   };
 
   const sorted = useMemo(() => {
-    if (!sort.col) return applications;
-    return [...applications].sort((a, b) => {
-      const av = (a[sort.col] ?? '').toString().toLowerCase();
-      const bv = (b[sort.col] ?? '').toString().toLowerCase();
+    const rows = applications.map((row, index) => ({ row, index }));
+    if (!sort.col) return rows;
+    return rows.sort((a, b) => {
+      const av = (a.row[sort.col] ?? '').toString().toLowerCase();
+      const bv = (b.row[sort.col] ?? '').toString().toLowerCase();
       return av < bv ? -sort.dir : av > bv ? sort.dir : 0;
     });
   }, [applications, sort]);
@@ -158,14 +159,21 @@ export default function ApplicationsTable({
             {allColumns.map((c) => (
               <th
                 key={c.key}
-                className={c.fixed ? 'sortable-th' : 'sortable-th'}
-                onClick={() => toggleSort(c.key)}
-                title={`Sort by ${c.label}`}
+                className="sortable-th"
+                aria-sort={sort.col === c.key ? (sort.dir === 1 ? 'ascending' : 'descending') : 'none'}
               >
-                {c.label}
-                <span className={sort.col === c.key ? 'sort-icon sort-icon--active' : 'sort-icon sort-icon--idle'}>
-                  {sort.col === c.key ? (sort.dir === 1 ? '↑' : '↓') : '↕'}
-                </span>
+                <button
+                  type="button"
+                  className="sortable-th__button"
+                  onClick={() => toggleSort(c.key)}
+                  title={`Sort by ${c.label}`}
+                  aria-label={`Sort by ${c.label}`}
+                >
+                  {c.label}
+                  <span className={sort.col === c.key ? 'sort-icon sort-icon--active' : 'sort-icon sort-icon--idle'}>
+                    {sort.col === c.key ? (sort.dir === 1 ? '↑' : '↓') : '↕'}
+                  </span>
+                </button>
               </th>
             ))}
             <th></th>
@@ -188,7 +196,7 @@ export default function ApplicationsTable({
               </td>
             </tr>
           ) : (
-            sorted.map((r, i) => {
+            sorted.map(({ row: r, index: originalIndex }) => {
               const deadline = getDeadlineState(r.nextActionDue);
               const rowClass = [
                 `status-row--${slug(r.status)}`,
@@ -196,7 +204,7 @@ export default function ApplicationsTable({
               ].filter(Boolean).join(' ');
 
               return (
-                <tr key={i} onClick={() => onEdit(i)} className={rowClass}>
+                <tr key={originalIndex} onClick={() => onEdit(originalIndex)} className={rowClass}>
                   <td>
                     <div className="company-cell">
                       <CompanyLogo name={r.company} />
@@ -225,7 +233,7 @@ export default function ApplicationsTable({
                         aria-label={statusButtonLabel(r.status)}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onAdvanceStatus(i);
+                          onAdvanceStatus(originalIndex);
                         }}
                       >
                         {r.status}
@@ -245,8 +253,8 @@ export default function ApplicationsTable({
                   <td className="link-cell">
                     {r.link && (
                       <button
-                        className="link-btn"
-                        title="View application status"
+                      className="link-btn"
+                      title="View application status"
                         onClick={(e) => {
                           e.stopPropagation();
                           window.open(r.link, '_blank', 'noopener,noreferrer');
@@ -266,7 +274,7 @@ export default function ApplicationsTable({
                       title="Delete"
                       onClick={(e) => {
                         e.stopPropagation();
-                        onDelete(i);
+                        onDelete(originalIndex);
                       }}
                     >
                       &times;

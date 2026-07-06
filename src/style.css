@@ -575,12 +575,32 @@ thead th {
 }
 
 .sortable-th {
-  cursor: pointer;
   user-select: none;
   white-space: nowrap;
+  padding: 0;
+}
+
+.sortable-th__button {
+  width: 100%;
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 10px 16px;
+  text-align: left;
+  font: inherit;
+  font-family: var(--mono);
+  font-weight: 500;
+  font-size: 9.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   transition: color 0.12s;
 }
-.sortable-th:hover { color: var(--text); }
+.sortable-th__button:hover { color: var(--text); }
+.sortable-th__button:focus-visible {
+  outline: 2px solid var(--violet);
+  outline-offset: -2px;
+}
 
 .sort-icon { margin-left: 4px; font-size: 9.5px; }
 .sort-icon--idle   { opacity: 0.2; }
@@ -793,6 +813,7 @@ tbody tr:hover .row-del { opacity: 1; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group.full { grid-column: 1 / -1; }
 
+.form-group__label,
 label {
   font-family: var(--mono); font-size: 9.5px; font-weight: 500; color: var(--text-2);
   text-transform: uppercase; letter-spacing: 0.08em;

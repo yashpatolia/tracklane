@@ -79,8 +79,8 @@ export default function ApplicationModal({ initialData, isEditing, existingAppli
             <input id={roleId} type="text" placeholder="e.g. Software Engineer Intern" value={form.role} onChange={set('role')} />
           </div>
           <div className="form-group">
-            <label>Season</label>
-            <div className="season-bar" role="radiogroup" aria-label="Internship season">
+            <span id={seasonId} className="form-group__label">Season</span>
+            <div className="season-bar" role="group" aria-labelledby={seasonId}>
               {SEASON_OPTIONS.map((season) => (
                 <button
                   key={season}

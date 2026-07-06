@@ -19,6 +19,7 @@ describe('ApplicationModal', () => {
       />
     );
 
+    expect(screen.getByRole('group', { name: /season/i })).toBeInTheDocument();
     await user.type(screen.getByLabelText('Company'), 'Shopify');
     await user.type(screen.getByLabelText('Role'), 'Software Engineer Intern');
     await user.click(screen.getByRole('button', { name: 'Summer' }));
