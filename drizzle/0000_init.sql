@@ -3,6 +3,7 @@ CREATE TABLE "applications" (
 	"user_id" integer NOT NULL,
 	"company" text NOT NULL,
 	"role" text DEFAULT '',
+	"season" text DEFAULT '',
 	"location" text DEFAULT '',
 	"stack" text DEFAULT '',
 	"status" text DEFAULT 'Not Applied',
