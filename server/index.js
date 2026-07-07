@@ -88,7 +88,7 @@ app.put('/api/applications', requireAuth, async (req, res) => {
       await tx.insert(applications).values({
         userId: req.user.id,
         ...Object.fromEntries(COLUMNS.map((c) => {
-          if (c === 'updatedAt') return [c, row.updatedAt || new Date().toISOString()];
+          if (c === 'updatedAt') return [c, row.updatedAt ? new Date(row.updatedAt) : new Date()];
           return [c, row[c] ?? ''];
         })),
       });
