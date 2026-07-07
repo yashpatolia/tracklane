@@ -218,13 +218,6 @@ export default function ApplicationsTable({
                       </div>
                     </div>
                   </td>
-                  {visibleColumns.season && (
-                    <td>
-                      {r.season
-                        ? <span className={chipClassForSeason(r.season)}>{r.season}</span>
-                        : <span className="season-empty">--</span>}
-                    </td>
-                  )}
                   <td>
                     {onAdvanceStatus ? (
                       <button
@@ -245,6 +238,13 @@ export default function ApplicationsTable({
                   <td>
                     <DateCell value={r.applied} />
                   </td>
+                  {visibleColumns.season && (
+                    <td>
+                      {r.season
+                        ? <span className={chipClassForSeason(r.season)}>{r.season}</span>
+                        : <span className="season-empty">--</span>}
+                    </td>
+                  )}
                   {visibleOptionalColumns.filter((col) => col.key !== 'season').map((col) => (
                     <td key={col.key}>
                       {renderOptionalCell(r, col.key)}
