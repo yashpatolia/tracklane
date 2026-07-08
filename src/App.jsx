@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchApplications, fetchMe, logout, saveApplications } from './api.js';
 import Header from './components/Header.jsx';
 import LoginPanel from './components/LoginPanel.jsx';
@@ -7,6 +7,7 @@ import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
 import { advanceStatus } from './utils/applications.js';
+import { applicationsToCsv, csvToApplications } from './utils/csv.js';
 
 function localDayString(date = new Date()) {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
@@ -20,6 +21,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const importInputRef = useRef(null);
 
   useEffect(() => {
     if (initialUser) return;
@@ -130,6 +132,36 @@ export default function App({ initialUser = null, initialApplications = null }) 
     openEdit(realIndex);
   };
 
+  const handleExport = () => {
+    const csv = applicationsToCsv(applications);
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `tracklane-applications-${localDayString()}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportClick = () => importInputRef.current?.click();
+
+  const handleImportFile = async (e) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    const text = await file.text();
+    const imported = csvToApplications(text);
+    if (imported.length === 0) {
+      alert('No rows found in that CSV.');
+      return;
+    }
+    if (!confirm(`Import ${imported.length} application${imported.length === 1 ? '' : 's'}? They will be added to your existing board.`)) return;
+
+    const stamped = imported.map((entry) => ({ ...entry, updatedAt: entry.updatedAt || new Date().toISOString() }));
+    await persist([...applications, ...stamped]);
+  };
+
   if (!authChecked) return null;
   if (!user) return <LoginPanel />;
 
@@ -151,9 +183,24 @@ export default function App({ initialUser = null, initialApplications = null }) 
               Applications
               {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
             </h2>
-            <button className="btn-add" onClick={openAdd}>
-              + New Entry
-            </button>
+            <div className="toolbar__actions">
+              <button className="btn-secondary" onClick={handleExport}>
+                Export CSV
+              </button>
+              <button className="btn-secondary" onClick={handleImportClick}>
+                Import CSV
+              </button>
+              <input
+                ref={importInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                onChange={handleImportFile}
+                style={{ display: 'none' }}
+              />
+              <button className="btn-add" onClick={openAdd}>
+                + New Entry
+              </button>
+            </div>
           </div>
           {loaded && (
             <ApplicationsTable

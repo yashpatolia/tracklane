@@ -511,6 +511,31 @@ body {
   box-shadow: 0 0 20px rgba(255,176,32,0.35);
 }
 
+.toolbar__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-secondary {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  padding: 7px 13px;
+  border-radius: 4px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s, transform 0.1s;
+}
+.btn-secondary:hover {
+  color: var(--text);
+  border-color: var(--border-2);
+}
+.btn-secondary:active { transform: scale(0.96); }
+
 /* ── login ──────────────────────────────────── */
 .login-page {
   min-height: 100vh;
