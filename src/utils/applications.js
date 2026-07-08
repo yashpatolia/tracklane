@@ -1,5 +1,12 @@
 const STATUS_FLOW = ['Not Applied', 'Applied', 'OA', 'Phone Screen', 'Interview', 'Offer'];
 
+export function shortenLocation(location) {
+  if (!location) return location;
+  return location
+    .replace(/\bUnited States of America\b/gi, 'US')
+    .replace(/\bUnited States\b/gi, 'US');
+}
+
 function norm(value) {
   return (value ?? '').toString().trim().toLowerCase();
 }

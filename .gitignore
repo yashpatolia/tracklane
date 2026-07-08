@@ -1,6 +1,4 @@
 node_modules
 dist
 .DS_Store
-tracker.sqlite-wal
-tracker.sqlite-shm
 .env

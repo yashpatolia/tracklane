@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { fmtDate, slug } from '../constants.js';
+import { COMP_PERIOD_SUFFIX, fmtDate, slug } from '../constants.js';
 import {
   formatRelativeStamp,
   getDeadlineState,
   getEmptyStateCopy,
+  shortenLocation,
 } from '../utils/applications.js';
 import CompanyLogo from './CompanyLogo.jsx';
 
@@ -63,7 +64,7 @@ export default function ApplicationsTable({
   activeFilter,
   onFilterClear,
 }) {
-  const [sort, setSort] = useState({ col: null, dir: 1 });
+  const [sort, setSort] = useState({ col: 'applied', dir: -1 });
   const [visibleColumns, setVisibleColumns] = useState(loadVisibility);
 
   useEffect(() => {
@@ -105,8 +106,9 @@ export default function ApplicationsTable({
     }
 
     if (key === 'comp') {
+      const suffix = COMP_PERIOD_SUFFIX[row.compPeriod] || COMP_PERIOD_SUFFIX.Hourly;
       return row.comp
-        ? <span className="comp-text">${row.comp}/hr</span>
+        ? <span className="comp-text">${row.comp}{suffix}</span>
         : <span className="comp-empty">--</span>;
     }
 
@@ -213,7 +215,7 @@ export default function ApplicationsTable({
                         <div className="company-name">{r.company}</div>
                         <div className="role-text">
                           {r.role}
-                          {r.location ? ` · ${r.location}` : ''}
+                          {r.location ? ` · ${shortenLocation(r.location)}` : ''}
                         </div>
                       </div>
                     </div>

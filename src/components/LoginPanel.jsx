@@ -1,5 +1,11 @@
 const STAGES = ['Applied', 'OA', 'Interview', 'Offer'];
 
+const FEATURES = [
+  'Fetch a job posting link and it fills in the company, role, and pay for you',
+  'Track pay by the hour, day, week, month, or year, whatever the listing uses',
+  'Advance an application through the pipeline with a single click',
+];
+
 function GoogleIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" aria-hidden="true">
@@ -28,7 +34,7 @@ export default function LoginPanel() {
           one pipeline.
         </h1>
         <p className="login-sub">
-          Applied, OA, interview, offer — tracked end to end in one place.
+          From first application to signed offer, tracked in one place.
         </p>
         <div className="login-stages">
           {STAGES.map((stage, i) => (
@@ -41,6 +47,14 @@ export default function LoginPanel() {
             </>
           ))}
         </div>
+        <ul className="login-features">
+          {FEATURES.map((feature, i) => (
+            <li className="login-feature" style={{ '--i': i + STAGES.length }} key={feature}>
+              <span className="login-feature__mark">✓</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
       </div>
 
       <div className="login-panel">
@@ -55,8 +69,8 @@ export default function LoginPanel() {
             </a>
           </div>
           <div className="login-card__stub">
-            <span className="login-card__stub-code">TRK-{new Date().getFullYear()}</span>
-            <span className="login-card__stub-code">BOARDING</span>
+            <span className="login-card__stub-code">NON-STOP</span>
+            <span className="login-card__stub-code">NOW BOARDING</span>
           </div>
         </div>
       </div>

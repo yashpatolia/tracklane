@@ -1,9 +1,13 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ApplicationsTable from './ApplicationsTable.jsx';
 
 describe('ApplicationsTable', () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+  });
+
   it('uses the original row index after sorting for edit, status, and delete actions', async () => {
     const user = userEvent.setup();
     const onEdit = vi.fn();
@@ -107,7 +111,9 @@ describe('ApplicationsTable', () => {
     expect(screen.getByRole('button', { name: /clear filter/i })).toBeInTheDocument();
   });
 
-  it('highlights overdue follow-ups', () => {
+  it('highlights overdue follow-ups', async () => {
+    const user = userEvent.setup();
+
     render(
       <ApplicationsTable
         applications={[
@@ -130,6 +136,9 @@ describe('ApplicationsTable', () => {
         onAdvanceStatus={vi.fn()}
       />
     );
+
+    // Next Action is hidden by default; turn it on before checking the badge.
+    await user.click(screen.getByRole('button', { name: 'Next Action', pressed: false }));
 
     expect(screen.getByText(/Follow up/i)).toHaveClass('deadline-overdue');
   });

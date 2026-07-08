@@ -23,3 +23,14 @@ export async function saveApplications(data) {
   });
   if (!res.ok) throw new Error('Failed to save applications');
 }
+
+export async function fetchJobPosting(url) {
+  const res = await fetch('/api/job-posting', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Could not fetch details from that link.');
+  return data;
+}

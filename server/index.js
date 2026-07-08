@@ -9,6 +9,7 @@ import { db, pool } from './db/index.js';
 import { applications } from './db/schema.js';
 import passport, { hasGoogleAuth, localDevLogin, requireAuth } from './auth.js';
 import { getDevApplications, replaceDevApplications } from './dev-store.js';
+import { fetchJobPostingDetails, HttpError } from './job-posting/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, '..', 'dist');
@@ -22,7 +23,7 @@ if (!SESSION_SECRET) {
   throw new Error('SESSION_SECRET is required in production.');
 }
 
-const COLUMNS = ['company', 'role', 'season', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'platform', 'link', 'nextAction', 'nextActionDue', 'updatedAt', 'notes'];
+const COLUMNS = ['company', 'role', 'season', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'compPeriod', 'platform', 'link', 'nextAction', 'nextActionDue', 'updatedAt', 'notes'];
 
 const app = express();
 app.use(express.json());
@@ -95,6 +96,23 @@ app.put('/api/applications', requireAuth, async (req, res) => {
     }
   });
   res.json({ ok: true });
+});
+
+app.post('/api/job-posting', requireAuth, async (req, res) => {
+  const { url } = req.body || {};
+  if (!url || typeof url !== 'string') {
+    return res.status(400).json({ error: 'A job posting URL is required.' });
+  }
+
+  try {
+    const details = await fetchJobPostingDetails(url);
+    res.json(details);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.status).json({ error: err.message });
+    }
+    res.status(502).json({ error: 'Could not fetch details from that link.' });
+  }
 });
 
 if (process.env.NODE_ENV === 'production') {

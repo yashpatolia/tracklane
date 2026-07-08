@@ -46,7 +46,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
       const target = e.target;
       const isTyping = target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName) || target?.isContentEditable;
       if (isTyping) return;
-      if ((e.metaKey || e.ctrlKey) && e.altKey && e.key.toLowerCase() === 'n') {
+      if ((e.metaKey || e.ctrlKey) && e.altKey && e.code === 'KeyN') {
         e.preventDefault();
         setEditingIndex(null);
         setModalOpen(true);

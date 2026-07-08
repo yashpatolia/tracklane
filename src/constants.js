@@ -1,6 +1,8 @@
 export const STATUS_OPTIONS = ['Not Applied', 'Applied', 'OA', 'Phone Screen', 'Interview', 'Offer', 'Rejected', 'Withdrawn'];
 export const SEASON_OPTIONS = ['Summer', 'Fall', 'Winter'];
 export const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const COMP_PERIOD_OPTIONS = ['Hourly', 'Daily', 'Weekly', 'Monthly', 'Yearly'];
+export const COMP_PERIOD_SUFFIX = { Hourly: '/hr', Daily: '/day', Weekly: '/wk', Monthly: '/mo', Yearly: '/yr' };
 
 export const EMPTY_ENTRY = {
   company: '',
@@ -14,6 +16,7 @@ export const EMPTY_ENTRY = {
   interview: '',
   offer: '',
   comp: '',
+  compPeriod: 'Hourly',
   platform: '',
   link: '',
   nextAction: '',

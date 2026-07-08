@@ -23,6 +23,7 @@ export const applications = pgTable('applications', {
   interview: text('interview').default(''),
   offer: text('offer').default(''),
   comp: text('comp').default(''),
+  compPeriod: text('comp_period').default('Hourly'),
   platform: text('platform').default(''),
   link: text('link').default(''),
   nextAction: text('next_action').default(''),
