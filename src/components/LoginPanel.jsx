@@ -32,23 +32,32 @@ export default function LoginPanel() {
         </p>
         <div className="login-stages">
           {STAGES.map((stage, i) => (
-            <div className="login-stage" style={{ '--i': i }} key={stage}>
-              <span className="login-stage__dot" />
-              <span className="login-stage__label">{stage}</span>
-            </div>
+            <>
+              <div className="login-stage" style={{ '--i': i }} key={stage}>
+                <span className="login-stage__dot" />
+                <span className="login-stage__label">{stage}</span>
+              </div>
+              {i < STAGES.length - 1 && <span className="login-stage__rail" key={`${stage}-rail`} />}
+            </>
           ))}
         </div>
       </div>
 
       <div className="login-panel">
         <div className="login-card">
-          <p className="login-card__eyebrow">Sign in</p>
-          <h2 className="login-card__title">Welcome back</h2>
-          <p className="login-card__sub">Continue with your Google account.</p>
-          <a className="login-google-btn" href="/auth/google">
-            <GoogleIcon />
-            Continue with Google
-          </a>
+          <div className="login-card__body">
+            <p className="login-card__eyebrow">Sign in</p>
+            <h2 className="login-card__title">Welcome back</h2>
+            <p className="login-card__sub">Continue with your Google account.</p>
+            <a className="login-google-btn" href="/auth/google">
+              <GoogleIcon />
+              Continue with Google
+            </a>
+          </div>
+          <div className="login-card__stub">
+            <span className="login-card__stub-code">TRK-{new Date().getFullYear()}</span>
+            <span className="login-card__stub-code">BOARDING</span>
+          </div>
         </div>
       </div>
     </div>

@@ -1,42 +1,45 @@
-import { useEffect, useState } from 'react';
+import ThemeToggle from './ThemeToggle.jsx';
+import Pipeline from './Pipeline.jsx';
 
-function formatClock(date) {
-  const hh = String(date.getHours()).padStart(2, '0');
-  const mm = String(date.getMinutes()).padStart(2, '0');
-  const ss = String(date.getSeconds()).padStart(2, '0');
-  return `${hh}:${mm}:${ss}`;
-}
+const NAV_LINKS = [
+  { href: '#applications', label: 'Applications' },
+];
 
-export default function Header({ user, onLogout }) {
-  const [time, setTime] = useState(() => formatClock(new Date()));
-
-  useEffect(() => {
-    const id = setInterval(() => setTime(formatClock(new Date())), 1000);
-    return () => clearInterval(id);
-  }, []);
-
+export default function Header({ user, onLogout, applications, activeFilter, onFilterChange }) {
   return (
-    <header className="app-header">
-      <div className="app-header__left">
-        <div className="live-dot">
-          <span className="live-dot__ring" />
-          <span className="live-dot__core" />
+    <header className="topnav">
+      <div className="topnav__row">
+        <div className="topnav__left">
+          <div className="topnav__brand">
+            <div className="live-dot">
+              <span className="live-dot__ring" />
+              <span className="live-dot__core" />
+            </div>
+            <h1 className="app-title">Tracklane</h1>
+          </div>
+          <nav className="topnav__links" aria-label="Sections">
+            {NAV_LINKS.map((link) => (
+              <a key={link.href} className="topnav__link" href={link.href}>
+                {link.label}
+              </a>
+            ))}
+          </nav>
         </div>
-        <div>
-          <h1 className="app-title">Tracklane</h1>
-          <p className="app-meta">{user?.name || user?.email}</p>
-        </div>
-      </div>
-      <div className="app-header__right">
-        <div className="app-clock">
-          <span>{time}</span>
-          <span className="zone">Local time</span>
-        </div>
-        {user && (
-          <button className="btn-logout" onClick={onLogout} title={user.email}>
+        <div className="topnav__right">
+          <ThemeToggle />
+          <span className="app-meta" title={user?.email}>{user?.name || user?.email}</span>
+          <button className="btn-logout" onClick={onLogout}>
             Sign out
           </button>
-        )}
+        </div>
+      </div>
+      <div className="topnav__route">
+        <Pipeline
+          applications={applications}
+          activeFilter={activeFilter}
+          onFilterChange={onFilterChange}
+          compact
+        />
       </div>
     </header>
   );

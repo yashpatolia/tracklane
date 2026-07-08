@@ -10,7 +10,7 @@ const FUNNEL = [
 
 export const REJECTED_SENTINEL = '__rejected__';
 
-export default function Pipeline({ applications, activeFilter, onFilterChange }) {
+export default function Pipeline({ applications, activeFilter, onFilterChange, compact = false }) {
   const counts = useMemo(() => {
     const map = {};
     for (const app of applications) {
@@ -24,44 +24,70 @@ export default function Pipeline({ applications, activeFilter, onFilterChange })
   const toggle = (key) => onFilterChange(activeFilter === key ? null : key);
 
   return (
-    <div className="pipeline">
-      <div className="pipeline-funnel">
-        {FUNNEL.map((stage, i) => (
-          <div key={stage.status} className="pipeline-stage-wrap">
-            <button
-              className={`pipeline-stage${activeFilter === stage.status ? ' active' : ''}`}
-              style={{ '--stage-color': stage.color }}
-              onClick={() => toggle(stage.status)}
-              title={`Filter by ${stage.status}`}
-            >
-              <span className="pipeline-count">{counts[stage.status] || 0}</span>
-              <span className="pipeline-label">{stage.status}</span>
+    <div className={`pipeline-v${compact ? ' pipeline-v--compact' : ''}`}>
+      {!compact && (
+        <div className="pipeline-v__head">
+          <span className="pipeline-v__title">Route</span>
+          {activeFilter && (
+            <button className="pipeline-clear" onClick={() => onFilterChange(null)}>
+              Clear ×
             </button>
-            {i < FUNNEL.length - 1 && <span className="pipeline-arrow">›</span>}
-          </div>
-        ))}
+          )}
+        </div>
+      )}
+      <div className="pipeline-v__body">
+        <div className="v-line">
+          {FUNNEL.map((stage, i) => {
+            const count = counts[stage.status] || 0;
+            const isLast = i === FUNNEL.length - 1 && rejectedCount === 0;
+            return (
+              <div key={stage.status} className="v-stage">
+                <div className="v-stage__rail">
+                  <span
+                    className={`v-node${count === 0 ? ' v-node--empty' : ''}${activeFilter === stage.status ? ' v-node--active' : ''}`}
+                    style={{ '--stage-color': stage.color }}
+                  />
+                  {!isLast && <span className="v-track" style={{ '--track-color': stage.color, opacity: count > 0 ? 1 : 0.35 }} />}
+                </div>
+                <button
+                  type="button"
+                  className={`v-stage__btn${activeFilter === stage.status ? ' active' : ''}`}
+                  onClick={() => toggle(stage.status)}
+                  title={`Filter by ${stage.status}`}
+                >
+                  <span className="v-count" style={{ color: stage.color }}>{count}</span>
+                  <span className="v-label">{stage.status}</span>
+                </button>
+              </div>
+            );
+          })}
 
-        {rejectedCount > 0 && (
-          <>
-            <span className="pipeline-divider" />
-            <button
-              className={`pipeline-stage${activeFilter === REJECTED_SENTINEL ? ' active' : ''}`}
-              style={{ '--stage-color': 'var(--s-rejected)' }}
-              onClick={() => toggle(REJECTED_SENTINEL)}
-              title="Filter rejected / withdrawn"
-            >
-              <span className="pipeline-count">{rejectedCount}</span>
-              <span className="pipeline-label">Rejected</span>
-            </button>
-          </>
+          {rejectedCount > 0 && (
+            <div className="v-stage v-stage--branch">
+              <div className="v-stage__rail">
+                <span
+                  className={`v-node${activeFilter === REJECTED_SENTINEL ? ' v-node--active' : ''}`}
+                  style={{ '--stage-color': 'var(--s-rejected)' }}
+                />
+              </div>
+              <button
+                type="button"
+                className={`v-stage__btn${activeFilter === REJECTED_SENTINEL ? ' active' : ''}`}
+                onClick={() => toggle(REJECTED_SENTINEL)}
+                title="Filter rejected / withdrawn"
+              >
+                <span className="v-count" style={{ color: 'var(--s-rejected)' }}>{rejectedCount}</span>
+                <span className="v-label">Rejected</span>
+              </button>
+            </div>
+          )}
+        </div>
+        {compact && activeFilter && (
+          <button className="pipeline-clear pipeline-clear--compact" onClick={() => onFilterChange(null)}>
+            Clear ×
+          </button>
         )}
       </div>
-
-      {activeFilter && (
-        <button className="pipeline-clear" onClick={() => onFilterChange(null)}>
-          Clear filter ×
-        </button>
-      )}
     </div>
   );
 }

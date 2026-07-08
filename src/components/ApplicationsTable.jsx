@@ -23,6 +23,7 @@ const OPTIONAL_COLUMNS = [
 ];
 
 const STORAGE_KEY = 'tracklane.table-columns.v1';
+const HIDDEN_BY_DEFAULT = new Set(['nextAction', 'notes']);
 
 function DateCell({ value }) {
   const formatted = fmtDate(value);
@@ -32,7 +33,7 @@ function DateCell({ value }) {
 }
 
 function loadVisibility() {
-  const defaults = Object.fromEntries(OPTIONAL_COLUMNS.map((col) => [col.key, true]));
+  const defaults = Object.fromEntries(OPTIONAL_COLUMNS.map((col) => [col.key, !HIDDEN_BY_DEFAULT.has(col.key)]));
   if (typeof window === 'undefined') return defaults;
 
   try {
@@ -213,7 +214,6 @@ export default function ApplicationsTable({
                         <div className="role-text">
                           {r.role}
                           {r.location ? ` · ${r.location}` : ''}
-                          {r.updatedAt ? ` · ${formatRelativeStamp(r.updatedAt)}` : ''}
                         </div>
                       </div>
                     </div>

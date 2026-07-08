@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { fetchApplications, fetchMe, logout, saveApplications } from './api.js';
 import Header from './components/Header.jsx';
 import LoginPanel from './components/LoginPanel.jsx';
-import Pipeline, { REJECTED_SENTINEL } from './components/Pipeline.jsx';
+import { REJECTED_SENTINEL } from './components/Pipeline.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
@@ -134,34 +134,38 @@ export default function App({ initialUser = null, initialApplications = null }) 
   if (!user) return <LoginPanel />;
 
   return (
-    <>
-      <Header user={user} onLogout={handleLogout} />
-      <Stats applications={applications} />
-      <Pipeline
+    <div className="app-shell">
+      <Header
+        user={user}
+        onLogout={handleLogout}
         applications={applications}
         activeFilter={statusFilter}
         onFilterChange={setStatusFilter}
       />
-      <div className="main">
-        <div className="toolbar">
-          <h2>
-            Applications
-            {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
-          </h2>
-          <button className="btn-add" onClick={openAdd}>
-            + New Entry
-          </button>
-        </div>
-        {loaded && (
-          <ApplicationsTable
-            applications={filteredApplications}
-            onEdit={handleEdit}
-            onDelete={handleQuickDelete}
-            onAdvanceStatus={handleAdvanceStatus}
-            activeFilterLabel={activeFilterLabel}
-            onFilterClear={() => setStatusFilter(null)}
-          />
-        )}
+
+      <div className="page">
+        <main className="main" id="applications">
+          <Stats applications={applications} />
+          <div className="toolbar">
+            <h2>
+              Applications
+              {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
+            </h2>
+            <button className="btn-add" onClick={openAdd}>
+              + New Entry
+            </button>
+          </div>
+          {loaded && (
+            <ApplicationsTable
+              applications={filteredApplications}
+              onEdit={handleEdit}
+              onDelete={handleQuickDelete}
+              onAdvanceStatus={handleAdvanceStatus}
+              activeFilterLabel={activeFilterLabel}
+              onFilterClear={() => setStatusFilter(null)}
+            />
+          )}
+        </main>
       </div>
       {modalOpen && (
         <ApplicationModal
@@ -174,6 +178,6 @@ export default function App({ initialUser = null, initialApplications = null }) 
           onDelete={handleDeleteEditing}
         />
       )}
-    </>
+    </div>
   );
 }
