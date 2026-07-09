@@ -64,6 +64,87 @@ describe('ApplicationsTable', () => {
     expect(onDelete).toHaveBeenCalledWith(1);
   });
 
+  it('uses the original row index after sorting for the archive action', async () => {
+    const user = userEvent.setup();
+    const onArchive = vi.fn();
+
+    render(
+      <ApplicationsTable
+        applications={[
+          {
+            company: 'Acme',
+            role: 'Intern',
+            season: 'Summer',
+            status: 'Applied',
+            stack: 'Vue',
+            comp: '32',
+            applied: '2026-07-04',
+            nextAction: '',
+            nextActionDue: '',
+            updatedAt: '2026-07-04T00:00:00.000Z',
+            notes: '',
+            archived: false,
+          },
+          {
+            company: 'Beta',
+            role: 'Intern',
+            season: 'Fall',
+            status: 'Interview',
+            stack: 'React',
+            comp: '34',
+            applied: '2026-07-03',
+            nextAction: '',
+            nextActionDue: '',
+            updatedAt: '2026-07-03T00:00:00.000Z',
+            notes: '',
+            archived: false,
+          },
+        ]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onAdvanceStatus={vi.fn()}
+        onArchive={onArchive}
+      />
+    );
+
+    const sortButton = screen.getByRole('button', { name: /sort by stack/i });
+    sortButton.focus();
+    await user.keyboard('{Enter}');
+
+    await user.click(screen.getAllByTitle('Archive')[0]);
+    expect(onArchive).toHaveBeenCalledWith(1);
+  });
+
+  it('shows Unarchive for already-archived rows and dims them', () => {
+    render(
+      <ApplicationsTable
+        applications={[
+          {
+            company: 'Acme',
+            role: 'Intern',
+            season: 'Summer',
+            status: 'Rejected',
+            stack: '',
+            comp: '',
+            applied: '2026-07-04',
+            nextAction: '',
+            nextActionDue: '',
+            updatedAt: '2026-07-04T00:00:00.000Z',
+            notes: '',
+            archived: true,
+          },
+        ]}
+        onEdit={vi.fn()}
+        onDelete={vi.fn()}
+        onAdvanceStatus={vi.fn()}
+        onArchive={vi.fn()}
+      />
+    );
+
+    expect(screen.getByTitle('Unarchive')).toBeInTheDocument();
+    expect(screen.getByText('Acme').closest('tr')).toHaveClass('status-row--archived');
+  });
+
   it('lets users hide low-value columns', async () => {
     const user = userEvent.setup();
 

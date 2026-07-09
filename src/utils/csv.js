@@ -76,7 +76,8 @@ export function csvToApplications(text) {
       const entry = { ...EMPTY_ENTRY };
       header.forEach((col, i) => {
         if (Object.prototype.hasOwnProperty.call(EMPTY_ENTRY, col)) {
-          entry[col] = cells[i] ?? '';
+          const raw = cells[i] ?? '';
+          entry[col] = typeof EMPTY_ENTRY[col] === 'boolean' ? raw === 'true' : raw;
         }
       });
       return entry;

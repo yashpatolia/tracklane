@@ -23,7 +23,7 @@ if (!SESSION_SECRET) {
   throw new Error('SESSION_SECRET is required in production.');
 }
 
-const COLUMNS = ['company', 'role', 'season', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'compPeriod', 'platform', 'link', 'nextAction', 'nextActionDue', 'updatedAt', 'notes'];
+const COLUMNS = ['company', 'role', 'season', 'location', 'stack', 'status', 'applied', 'oa', 'interview', 'offer', 'comp', 'compPeriod', 'platform', 'link', 'nextAction', 'nextActionDue', 'updatedAt', 'notes', 'archived'];
 
 const app = express();
 app.use(express.json());
@@ -90,6 +90,7 @@ app.put('/api/applications', requireAuth, async (req, res) => {
         userId: req.user.id,
         ...Object.fromEntries(COLUMNS.map((c) => {
           if (c === 'updatedAt') return [c, row.updatedAt ? new Date(row.updatedAt) : new Date()];
+          if (c === 'archived') return [c, Boolean(row.archived)];
           return [c, row[c] ?? ''];
         })),
       });

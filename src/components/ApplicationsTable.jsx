@@ -60,6 +60,7 @@ export default function ApplicationsTable({
   onEdit,
   onDelete,
   onAdvanceStatus,
+  onArchive,
   activeFilterLabel,
   activeFilter,
   onFilterClear,
@@ -91,7 +92,7 @@ export default function ApplicationsTable({
 
   const visibleOptionalColumns = OPTIONAL_COLUMNS.filter((col) => visibleColumns[col.key]);
   const allColumns = [...BASE_COLUMNS, ...visibleOptionalColumns];
-  const colSpan = allColumns.length + 2;
+  const colSpan = allColumns.length + 3;
   const emptyCopy = getEmptyStateCopy(activeFilterLabel || activeFilter);
 
   const renderOptionalCell = (row, key) => {
@@ -181,6 +182,7 @@ export default function ApplicationsTable({
             ))}
             <th></th>
             <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -204,6 +206,7 @@ export default function ApplicationsTable({
               const rowClass = [
                 `status-row--${slug(r.status)}`,
                 deadline?.tone === 'overdue' ? 'status-row--overdue' : '',
+                r.archived ? 'status-row--archived' : '',
               ].filter(Boolean).join(' ');
 
               return (
@@ -266,6 +269,24 @@ export default function ApplicationsTable({
                           <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                           <polyline points="15 3 21 3 21 9" />
                           <line x1="10" y1="14" x2="21" y2="3" />
+                        </svg>
+                      </button>
+                    )}
+                  </td>
+                  <td className="archive-cell">
+                    {onArchive && (
+                      <button
+                        className="row-archive"
+                        title={r.archived ? 'Unarchive' : 'Archive'}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onArchive(originalIndex);
+                        }}
+                      >
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="4" width="18" height="4" rx="1" />
+                          <path d="M4 8v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8" />
+                          <line x1="10" y1="13" x2="14" y2="13" />
                         </svg>
                       </button>
                     )}

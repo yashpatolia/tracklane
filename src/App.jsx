@@ -21,6 +21,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
   const importInputRef = useRef(null);
 
   useEffect(() => {
@@ -65,12 +66,15 @@ export default function App({ initialUser = null, initialApplications = null }) 
     setLoaded(false);
   };
 
+  const activeApplications = useMemo(() => applications.filter((a) => !a.archived), [applications]);
+
   const filteredApplications = useMemo(() => {
-    if (!statusFilter) return applications;
+    const source = showArchived ? applications : activeApplications;
+    if (!statusFilter) return source;
     if (statusFilter === REJECTED_SENTINEL)
-      return applications.filter((a) => a.status === 'Rejected' || a.status === 'Withdrawn');
-    return applications.filter((a) => a.status === statusFilter);
-  }, [applications, statusFilter]);
+      return source.filter((a) => a.status === 'Rejected' || a.status === 'Withdrawn');
+    return source.filter((a) => a.status === statusFilter);
+  }, [applications, activeApplications, showArchived, statusFilter]);
 
   const activeFilterLabel = statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter;
 
@@ -126,6 +130,17 @@ export default function App({ initialUser = null, initialApplications = null }) 
     await persist(next);
   };
 
+  const handleToggleArchive = async (index) => {
+    const app = filteredApplications[index];
+    const realIndex = applications.indexOf(app);
+    if (realIndex === -1) return;
+
+    const current = applications[realIndex];
+    const next = [...applications];
+    next[realIndex] = { ...current, archived: !current.archived, updatedAt: new Date().toISOString() };
+    await persist(next);
+  };
+
   const handleEdit = (index) => {
     const app = filteredApplications[index];
     const realIndex = applications.indexOf(app);
@@ -170,20 +185,27 @@ export default function App({ initialUser = null, initialApplications = null }) 
       <Header
         user={user}
         onLogout={handleLogout}
-        applications={applications}
+        applications={activeApplications}
         activeFilter={statusFilter}
         onFilterChange={setStatusFilter}
       />
 
       <div className="page">
         <main className="main" id="applications">
-          <Stats applications={applications} />
+          <Stats applications={activeApplications} />
           <div className="toolbar">
             <h2>
               Applications
               {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
             </h2>
             <div className="toolbar__actions">
+              <button
+                className={`btn-secondary${showArchived ? ' active' : ''}`}
+                aria-pressed={showArchived}
+                onClick={() => setShowArchived((v) => !v)}
+              >
+                {showArchived ? 'Hide Archived' : 'Show Archived'}
+              </button>
               <button className="btn-secondary" onClick={handleExport}>
                 Export CSV
               </button>
@@ -208,6 +230,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
               onEdit={handleEdit}
               onDelete={handleQuickDelete}
               onAdvanceStatus={handleAdvanceStatus}
+              onArchive={handleToggleArchive}
               activeFilterLabel={activeFilterLabel}
               onFilterClear={() => setStatusFilter(null)}
             />

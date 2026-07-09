@@ -32,6 +32,14 @@ describe('csv helpers', () => {
     expect(imported[1]).toMatchObject({ company: 'Globex', role: 'Backend Intern', status: 'Applied' });
   });
 
+  it('round-trips the archived flag as a real boolean, not the string "false"', () => {
+    const csv = applicationsToCsv([{ ...EMPTY_ENTRY, company: 'Acme', archived: true }]);
+    const imported = csvToApplications(csv);
+
+    expect(imported[0].archived).toBe(true);
+    expect(csvToApplications('company,archived\nGlobex,false')[0].archived).toBe(false);
+  });
+
   it('defaults unrecognized or missing columns instead of throwing', () => {
     const csv = 'company,role,mystery\nAcme,Intern,???';
     const imported = csvToApplications(csv);

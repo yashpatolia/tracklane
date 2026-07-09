@@ -535,6 +535,10 @@ body {
   border-color: var(--border-2);
 }
 .btn-secondary:active { transform: scale(0.96); }
+.btn-secondary.active {
+  color: var(--amber);
+  border-color: var(--amber);
+}
 
 /* ── login ──────────────────────────────────── */
 .login-page {
@@ -1030,6 +1034,18 @@ td.del-cell { width: 32px; padding: 0 6px 0 0; }
 }
 tbody tr:hover .row-del { opacity: 1; }
 .row-del:hover { color: var(--s-rejected) !important; background: rgba(248,113,113,0.1); }
+
+td.archive-cell { width: 32px; padding: 0 4px; }
+.row-archive {
+  opacity: 0; display: inline-flex; align-items: center; justify-content: center;
+  background: none; border: none; cursor: pointer; color: var(--text-2);
+  padding: 5px 7px; border-radius: 4px;
+  transition: opacity 0.1s, color 0.1s, background 0.1s;
+}
+tbody tr:hover .row-archive { opacity: 1; }
+.row-archive:hover { color: var(--amber) !important; background: var(--amber-glow); }
+
+.status-row--archived { opacity: 0.55; }
 
 .empty-state {
   text-align: center; padding: 64px 32px; color: var(--text-2);
