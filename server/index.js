@@ -90,7 +90,7 @@ app.put('/api/applications', requireAuth, async (req, res) => {
         userId: req.user.id,
         ...Object.fromEntries(COLUMNS.map((c) => {
           if (c === 'updatedAt') return [c, row.updatedAt ? new Date(row.updatedAt) : new Date()];
-          if (c === 'archived') return [c, Boolean(row.archived)];
+          if (c === 'archived') return [c, row.archived === true || row.archived === 'true'];
           return [c, row[c] ?? ''];
         })),
       });
