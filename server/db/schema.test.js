@@ -6,4 +6,9 @@ describe('database schema', () => {
     expect(applications.season.notNull).toBe(true);
     expect(applications.season.config.notNull).toBe(true);
   });
+
+  it('defaults archived to false and requires a value', () => {
+    expect(applications.archived.notNull).toBe(true);
+    expect(applications.archived.default).toBe(false);
+  });
 });

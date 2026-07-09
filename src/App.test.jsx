@@ -92,4 +92,28 @@ describe('App shortcuts', () => {
       }),
     ]);
   });
+
+  it('archives a row, hides it by default, and reveals it via Show Archived', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <App
+        initialUser={{ id: 1, email: 'test@example.com', name: 'Test User', avatarUrl: '' }}
+        initialApplications={[
+          { company: 'Acme', role: 'Intern', status: 'Rejected', applied: '2026-07-01', archived: false },
+        ]}
+      />
+    );
+
+    await screen.findByText('Acme');
+    await user.click(screen.getByTitle('Archive'));
+
+    expect(saveApplications).toHaveBeenCalledWith([
+      expect.objectContaining({ company: 'Acme', archived: true }),
+    ]);
+    expect(screen.queryByText('Acme')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Show Archived' }));
+    expect(screen.getByText('Acme')).toBeInTheDocument();
+  });
 });

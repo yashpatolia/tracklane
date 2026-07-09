@@ -1,4 +1,4 @@
-import { pgTable, serial, integer, text, timestamp } from 'drizzle-orm/pg-core';
+import { pgTable, serial, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
   id: serial('id').primaryKey(),
@@ -30,4 +30,5 @@ export const applications = pgTable('applications', {
   nextActionDue: text('next_action_due').default(''),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   notes: text('notes').default(''),
+  archived: boolean('archived').default(false).notNull(),
 });

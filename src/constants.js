@@ -23,6 +23,7 @@ export const EMPTY_ENTRY = {
   nextActionDue: '',
   updatedAt: '',
   notes: '',
+  archived: false,
 };
 
 export function slug(s) {
