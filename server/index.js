@@ -10,6 +10,7 @@ import { applications } from './db/schema.js';
 import passport, { hasGoogleAuth, localDevLogin, requireAuth } from './auth.js';
 import { getDevApplications, replaceDevApplications } from './dev-store.js';
 import { fetchJobPostingDetails, HttpError } from './job-posting/index.js';
+import friendsRouter from './friends.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DIST_DIR = path.join(__dirname, '..', 'dist');
@@ -65,9 +66,11 @@ app.post('/auth/logout', (req, res) => {
 
 app.get('/api/me', (req, res) => {
   if (!req.isAuthenticated()) return res.json({ user: null });
-  const { id, email, name, avatarUrl } = req.user;
-  res.json({ user: { id, email, name, avatarUrl } });
+  const { id, email, name, avatarUrl, username } = req.user;
+  res.json({ user: { id, email, name, avatarUrl, username: username ?? null } });
 });
+
+app.use('/api', friendsRouter);
 
 app.get('/api/applications', requireAuth, async (req, res) => {
   if (!process.env.DATABASE_URL) {
