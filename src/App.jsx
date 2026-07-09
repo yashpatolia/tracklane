@@ -6,6 +6,8 @@ import { REJECTED_SENTINEL } from './components/Pipeline.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
+import SettingsModal from './components/SettingsModal.jsx';
+import FriendsView from './components/FriendsView.jsx';
 import { advanceStatus } from './utils/applications.js';
 import { applicationsToCsv, csvToApplications } from './utils/csv.js';
 
@@ -22,6 +24,8 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const [modalOpen, setModalOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [view, setView] = useState('applications');
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const importInputRef = useRef(null);
 
   useEffect(() => {
@@ -177,6 +181,11 @@ export default function App({ initialUser = null, initialApplications = null }) 
     await persist([...applications, ...stamped]);
   };
 
+  const handleSettingsSave = (username) => {
+    setUser((u) => ({ ...u, username }));
+    setSettingsOpen(false);
+  };
+
   if (!authChecked) return null;
   if (!user) return <LoginPanel />;
 
@@ -188,54 +197,63 @@ export default function App({ initialUser = null, initialApplications = null }) 
         applications={activeApplications}
         activeFilter={statusFilter}
         onFilterChange={setStatusFilter}
+        view={view}
+        onViewChange={setView}
+        onOpenSettings={() => setSettingsOpen(true)}
       />
 
       <div className="page">
-        <main className="main" id="applications">
-          <Stats applications={activeApplications} />
-          <div className="toolbar">
-            <h2>
-              Applications
-              {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
-            </h2>
-            <div className="toolbar__actions">
-              <button
-                className={`btn-secondary${showArchived ? ' active' : ''}`}
-                aria-pressed={showArchived}
-                onClick={() => setShowArchived((v) => !v)}
-              >
-                {showArchived ? 'Hide Archived' : 'Show Archived'}
-              </button>
-              <button className="btn-secondary" onClick={handleExport}>
-                Export CSV
-              </button>
-              <button className="btn-secondary" onClick={handleImportClick}>
-                Import CSV
-              </button>
-              <input
-                ref={importInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleImportFile}
-                style={{ display: 'none' }}
-              />
-              <button className="btn-add" onClick={openAdd}>
-                + New Entry
-              </button>
+        {view === 'applications' ? (
+          <main className="main" id="applications">
+            <Stats applications={activeApplications} />
+            <div className="toolbar">
+              <h2>
+                Applications
+                {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
+              </h2>
+              <div className="toolbar__actions">
+                <button
+                  className={`btn-secondary${showArchived ? ' active' : ''}`}
+                  aria-pressed={showArchived}
+                  onClick={() => setShowArchived((v) => !v)}
+                >
+                  {showArchived ? 'Hide Archived' : 'Show Archived'}
+                </button>
+                <button className="btn-secondary" onClick={handleExport}>
+                  Export CSV
+                </button>
+                <button className="btn-secondary" onClick={handleImportClick}>
+                  Import CSV
+                </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleImportFile}
+                  style={{ display: 'none' }}
+                />
+                <button className="btn-add" onClick={openAdd}>
+                  + New Entry
+                </button>
+              </div>
             </div>
-          </div>
-          {loaded && (
-            <ApplicationsTable
-              applications={filteredApplications}
-              onEdit={handleEdit}
-              onDelete={handleQuickDelete}
-              onAdvanceStatus={handleAdvanceStatus}
-              onArchive={handleToggleArchive}
-              activeFilterLabel={activeFilterLabel}
-              onFilterClear={() => setStatusFilter(null)}
-            />
-          )}
-        </main>
+            {loaded && (
+              <ApplicationsTable
+                applications={filteredApplications}
+                onEdit={handleEdit}
+                onDelete={handleQuickDelete}
+                onAdvanceStatus={handleAdvanceStatus}
+                onArchive={handleToggleArchive}
+                activeFilterLabel={activeFilterLabel}
+                onFilterClear={() => setStatusFilter(null)}
+              />
+            )}
+          </main>
+        ) : (
+          <main className="main" id="friends">
+            <FriendsView hasUsername={Boolean(user?.username)} />
+          </main>
+        )}
       </div>
       {modalOpen && (
         <ApplicationModal
@@ -247,6 +265,9 @@ export default function App({ initialUser = null, initialApplications = null }) 
           onCancel={closeModal}
           onDelete={handleDeleteEditing}
         />
+      )}
+      {settingsOpen && (
+        <SettingsModal user={user} onSave={handleSettingsSave} onCancel={() => setSettingsOpen(false)} />
       )}
     </div>
   );
