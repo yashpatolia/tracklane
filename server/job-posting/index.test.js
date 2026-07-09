@@ -269,4 +269,99 @@ describe('fetchJobPostingDetails', () => {
     const result = await fetchJobPostingDetails('https://example.com/jobs/1');
     expect(result.ok).toBe(false);
   });
+
+  it('uses the Lever strategy: derives company from the URL slug and pulls role/location/description from the postings API', async () => {
+    const shellHtml = '<!doctype html><html><head></head><body>Redirecting...</body></html>';
+    const apiPayload = {
+      text: 'Associate Director, Growth',
+      categories: { location: 'New York, NY, United States' },
+      descriptionPlain: 'We are looking for a growth marketer. The annual salary range is $120,000 - $150,000.',
+    };
+
+    fetch.mockImplementation(async (url) => {
+      if (url.includes('api.lever.co')) return response({ json: apiPayload });
+      return response({ body: shellHtml });
+    });
+
+    const result = await fetchJobPostingDetails('https://jobs.lever.co/ro/bde27362-0652-4d1a-bb8e-d6100ca20654');
+
+    expect(result.company).toBe('Ro');
+    expect(result.role).toBe('Associate Director, Growth');
+    expect(result.location).toBe('New York, NY, US');
+    expect(result.comp).toBe('120000-150000');
+    expect(result.compPeriod).toBe('Yearly');
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('still derives a company name from the URL slug if the Lever API call fails', async () => {
+    fetch.mockImplementation(async (url) => {
+      if (url.includes('api.lever.co')) return response({ ok: false, status: 500 });
+      return response({ body: '<!doctype html><html><head></head><body></body></html>' });
+    });
+
+    const result = await fetchJobPostingDetails('https://jobs.lever.co/acme-co/bde27362-0652-4d1a-bb8e-d6100ca20654');
+    expect(result.company).toBe('Acme Co');
+  });
+
+  it('uses the SmartRecruiters strategy: pulls role/company/location/description from the postings API', async () => {
+    const shellHtml = '<!doctype html><html><head></head><body>Redirecting...</body></html>';
+    const apiPayload = {
+      name: 'Sr. Manager, Growth Marketing',
+      company: { name: 'Visa' },
+      location: { fullLocation: 'Austin, TX, United States' },
+      jobAd: {
+        sections: {
+          jobDescription: { text: 'Base Pay Range: $120,000 - $160,000 per year. Experience with SQL required.' },
+        },
+      },
+    };
+
+    fetch.mockImplementation(async (url) => {
+      if (url.includes('api.smartrecruiters.com')) return response({ json: apiPayload });
+      return response({ body: shellHtml });
+    });
+
+    const result = await fetchJobPostingDetails('https://jobs.smartrecruiters.com/Visa/744000133907678-sr-manager');
+
+    expect(result.role).toBe('Sr. Manager, Growth Marketing');
+    expect(result.company).toBe('Visa');
+    expect(result.location).toBe('Austin, TX, US');
+    expect(result.comp).toBe('120000-160000');
+    expect(result.compPeriod).toBe('Yearly');
+    expect(result.stack).toContain('SQL');
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it('still returns generic results if the SmartRecruiters API call fails', async () => {
+    const html = jsonLdShell({
+      posting: { '@type': 'JobPosting', title: 'Recruiter', hiringOrganization: { name: 'Some Co' } },
+    });
+    fetch.mockImplementation(async (url) => {
+      if (url.includes('api.smartrecruiters.com')) return response({ ok: false, status: 500 });
+      return response({ body: html });
+    });
+
+    const result = await fetchJobPostingDetails('https://jobs.smartrecruiters.com/someco/123456-recruiter');
+    expect(result.role).toBe('Recruiter');
+    expect(result.company).toBe('Some Co');
+  });
+
+  it('uses the iCIMS strategy: derives company from the tenant subdomain when generic parsing found none', async () => {
+    const html = '<!doctype html><html><head><title>Working at ACME</title></head><body>Job details here.</body></html>';
+    fetch.mockResolvedValueOnce(response({ body: html }));
+
+    const result = await fetchJobPostingDetails('https://careers-acme.icims.com/jobs/4566966/software-engineer-intern/job');
+    expect(result.company).toBe('Acme');
+    expect(fetch).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not override a company name already found by generic parsing on iCIMS pages', async () => {
+    const html = jsonLdShell({
+      posting: { '@type': 'JobPosting', title: 'Software Engineer Intern', hiringOrganization: { name: 'Acme Corp' } },
+    });
+    fetch.mockResolvedValueOnce(response({ body: html }));
+
+    const result = await fetchJobPostingDetails('https://careers-acme.icims.com/jobs/4566966/software-engineer-intern/job');
+    expect(result.company).toBe('Acme Corp');
+  });
 });
