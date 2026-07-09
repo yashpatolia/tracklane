@@ -65,17 +65,9 @@ There's also `npm run db:import-sqlite`, a one-off script for importing from a l
 
 ## Data model
 
-Single `applications` table (per-user, `user_id` FK to `users`). Columns roughly: `company`, `role`, `season` (Summer/Fall/Winter, required), `location`, `stack`, `status` (Not Applied → Applied → OA → Phone Screen → Interview → Offer, plus Rejected/Withdrawn), `applied`/`oa`/`interview`/`offer` dates, `comp` + `compPeriod` (Hourly/Daily/Weekly/Monthly/Yearly), `platform`, `link` (job posting URL), `nextAction` + `nextActionDue`, `updatedAt`, `notes`, `archived`.
+Single `applications` table (per-user, `user_id` FK to `users`). Columns roughly: `company`, `role`, `season` (Summer/Fall/Winter, required), `location`, `stack`, `status` (Not Applied → Applied → OA → Phone Screen → Interview → Offer, plus Rejected/Withdrawn), `applied`/`oa`/`interview`/`offer` dates, `comp` + `compPeriod` (Hourly/Daily/Weekly/Monthly/Yearly), `platform`, `link` (job posting URL), `nextAction` + `nextActionDue`, `updatedAt`, `notes`.
 
 The frontend doesn't do per-field PATCH requests: `saveApplications()` PUTs the entire application list, and the server replaces all rows for that user in a transaction (`server/index.js`, `PUT /api/applications`). Keep this in mind when adding fields — client and server field lists (`EMPTY_ENTRY` in `src/constants.js`, `COLUMNS` in `server/index.js`, `applications` schema) all need to stay in sync.
-
-`users` also has a nullable, unique `username` — set via Settings, required before the Friends feature is usable. A `friendships` table (`requesterId`/`addresseeId` → `users.id`, `status` `pending`|`accepted`) tracks the friend graph; declining a request deletes the row rather than keeping a `declined` status. No application data is shared between friends yet — this only tracks the connection itself, deliberately structured (one durable row per pair) so a later per-friend visibility layer can attach to it without a schema rework.
-
-## Social / friends
-
-- `server/friends.js` is the first router module split out of the flat `server/index.js` — worth following as the pattern for any future feature with its own multi-endpoint surface and authorization rules (mounted via `app.use('/api', friendsRouter)`), rather than growing `server/index.js` further.
-- `server/dev-store.js` mirrors the friendship/username functions for dev-store mode (no `DATABASE_URL`) — keep both paths in sync the same way `getDevApplications`/`replaceDevApplications` already parallel the Drizzle path.
-- **The two-sided friend flow can't be tested locally without real Google OAuth.** `localDevLogin` (`server/auth.js`) always creates identity via the in-memory dev-store (`upsertDevUser`) whenever `hasGoogleAuth` is false — this happens *regardless* of whether `DATABASE_URL`/Postgres is configured for applications. Each server process has its own isolated dev-store `Map`s, so **running two server processes with different `DEV_AUTH_EMAIL` values does not work** — confirmed by hand: a user created on one process's dev-store is invisible to a second process, even pointed at the same `DATABASE_URL`, since neither process's identity ever touches Postgres. The only way to exercise send/accept/decline between two real accounts today is real Google OAuth configured with two separate Google accounts. Seeding a second row directly into Postgres `users` doesn't help either — there's no login path that authenticates as a Postgres-seeded user without real OAuth. (A real fix — having `localDevLogin` persist dev users to Postgres when `DATABASE_URL` is set — would unblock this, but is out of scope for the friends feature itself.)
 
 ## Job posting auto-fill
 
@@ -92,9 +84,7 @@ Only add a new strategy when a platform is *proven* to need one (test against a 
 ## Frontend structure
 
 - `src/App.jsx` — top-level state (auth, applications list, filters, modal state), all mutations go through `persist()` which updates local state then calls `saveApplications()`.
-- `src/components/` — `Header` (top navbar, includes the compact `Pipeline` and the Applications/Friends view switch), `Pipeline` (the "route" stage filter, has a `compact` prop for navbar use), `Stats`, `ApplicationsTable` (sortable, column visibility persisted in `localStorage` under `tracklane.table-columns.v1`), `ApplicationModal` (add/edit form), `SettingsModal` (username), `FriendsView` + `FriendSearchResults`/`FriendRequestsList`/`FriendsList` (friend graph UI), `ThemeToggle` (dark/light, persisted under `tracklane.theme`, applied pre-paint via an inline script in `index.html` to avoid a flash), `LoginPanel`.
-- `src/friends-api.js` — client wrappers for the friends/username endpoints, separate from `src/api.js` (applications/auth/job-posting) since it's a distinct concern with its own growing surface.
-- There's no router; `view` state in `App.jsx` swaps between the Applications and Friends sections in place of a single `<main>`.
+- `src/components/` — `Header` (top navbar, includes the compact `Pipeline`), `Pipeline` (the "route" stage filter, has a `compact` prop for navbar use), `Stats`, `ApplicationsTable` (sortable, column visibility persisted in `localStorage` under `tracklane.table-columns.v1`), `ApplicationModal` (add/edit form), `ThemeToggle` (dark/light, persisted under `tracklane.theme`, applied pre-paint via an inline script in `index.html` to avoid a flash), `LoginPanel`.
 - `src/utils/applications.js` — pure helpers: status advancement, validation (duplicate company+role check), date formatting/relative stamps, deadline urgency, empty-state copy.
 - `src/constants.js` — shared option lists (`STATUS_OPTIONS`, `SEASON_OPTIONS`, `COMP_PERIOD_OPTIONS`, etc.) and `EMPTY_ENTRY` (the blank form shape).
 

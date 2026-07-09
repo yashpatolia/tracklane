@@ -9,27 +9,12 @@ vi.mock('./api.js', () => ({
   saveApplications: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('./friends-api.js', () => ({
-  checkUsername: vi.fn(),
-  setUsername: vi.fn(),
-  searchUsers: vi.fn(),
-  sendFriendRequest: vi.fn(),
-  acceptFriendRequest: vi.fn(),
-  declineFriendRequest: vi.fn(),
-  removeFriendship: vi.fn(),
-  fetchFriends: vi.fn(),
-  fetchFriendRequests: vi.fn(),
-}));
-
 import App from './App.jsx';
 import { saveApplications } from './api.js';
-import { checkUsername, setUsername } from './friends-api.js';
 
 describe('App shortcuts', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    checkUsername.mockResolvedValue({ available: true });
-    setUsername.mockResolvedValue({ username: 'shopify_fan' });
   });
 
   afterEach(() => {
@@ -130,40 +115,5 @@ describe('App shortcuts', () => {
 
     await user.click(screen.getByRole('button', { name: 'Show Archived' }));
     expect(screen.getByText('Acme')).toBeInTheDocument();
-  });
-
-  it('switches to the Friends view and prompts for a username when none is set', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <App
-        initialUser={{ id: 1, email: 'test@example.com', name: 'Test User', avatarUrl: '', username: null }}
-        initialApplications={[]}
-      />
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Friends' }));
-    expect(screen.getByText('Set a username first')).toBeInTheDocument();
-  });
-
-  it('opens Settings from the header and saves a username', async () => {
-    const user = userEvent.setup();
-
-    render(
-      <App
-        initialUser={{ id: 1, email: 'test@example.com', name: 'Test User', avatarUrl: '', username: null }}
-        initialApplications={[]}
-      />
-    );
-
-    await user.click(screen.getByRole('button', { name: 'Test User' }));
-    expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
-
-    await user.type(screen.getByLabelText('Handle'), 'shopify_fan');
-    await screen.findByText('Available.');
-    await user.click(screen.getByRole('button', { name: 'Save' }));
-
-    expect(setUsername).toHaveBeenCalledWith('shopify_fan');
-    expect(screen.queryByRole('heading', { name: 'Settings' })).not.toBeInTheDocument();
   });
 });

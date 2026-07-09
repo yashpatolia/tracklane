@@ -130,9 +130,6 @@ body {
   text-decoration: none;
   padding: 7px 10px;
   transition: color 0.15s;
-  background: none;
-  border: none;
-  cursor: pointer;
 }
 .topnav__link::after {
   content: "";
@@ -148,8 +145,6 @@ body {
 }
 .topnav__link:hover { color: var(--text); }
 .topnav__link:hover::after { transform: scaleX(1); }
-.topnav__link.active { color: var(--amber); }
-.topnav__link.active::after { transform: scaleX(1); }
 
 .topnav__right {
   display: flex;
@@ -240,14 +235,6 @@ body {
   white-space: nowrap;
   max-width: 220px;
 }
-.app-meta--button {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  transition: color 0.15s;
-}
-.app-meta--button:hover { color: var(--text); }
 
 .btn-logout {
   background: transparent;
@@ -1083,21 +1070,6 @@ tbody tr:hover .row-archive { opacity: 1; }
   letter-spacing: 0.08em;
   cursor: pointer;
 }
-
-/* ── friends ────────────────────────────────── */
-.friends-view { display: flex; flex-direction: column; gap: 8px; }
-.friends-search__input { width: 100%; margin-bottom: 12px; }
-.friend-requests__group + .friend-requests__group { margin-top: 16px; }
-.friend-list { display: flex; flex-direction: column; gap: 8px; }
-.friend-row {
-  display: flex; align-items: center; justify-content: space-between;
-  border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px;
-  background: var(--surface-2);
-}
-.friend-row__identity { display: flex; flex-direction: column; gap: 2px; }
-.friend-row__name { font-weight: 600; font-size: 13px; }
-.friend-row__handle { font-family: var(--mono); font-size: 11px; color: var(--text-2); }
-.friend-row__actions { display: flex; gap: 8px; }
 
 /* ── modal ──────────────────────────────────── */
 .modal-overlay {

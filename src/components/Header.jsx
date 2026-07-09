@@ -1,12 +1,11 @@
 import ThemeToggle from './ThemeToggle.jsx';
 import Pipeline from './Pipeline.jsx';
 
-const VIEWS = [
-  { id: 'applications', label: 'Applications' },
-  { id: 'friends', label: 'Friends' },
+const NAV_LINKS = [
+  { href: '#applications', label: 'Applications' },
 ];
 
-export default function Header({ user, onLogout, applications, activeFilter, onFilterChange, view, onViewChange, onOpenSettings }) {
+export default function Header({ user, onLogout, applications, activeFilter, onFilterChange }) {
   return (
     <header className="topnav">
       <div className="topnav__row">
@@ -19,24 +18,16 @@ export default function Header({ user, onLogout, applications, activeFilter, onF
             <h1 className="app-title">Tracklane</h1>
           </div>
           <nav className="topnav__links" aria-label="Sections">
-            {VIEWS.map((v) => (
-              <button
-                key={v.id}
-                type="button"
-                className={`topnav__link${view === v.id ? ' active' : ''}`}
-                aria-pressed={view === v.id}
-                onClick={() => onViewChange(v.id)}
-              >
-                {v.label}
-              </button>
+            {NAV_LINKS.map((link) => (
+              <a key={link.href} className="topnav__link" href={link.href}>
+                {link.label}
+              </a>
             ))}
           </nav>
         </div>
         <div className="topnav__right">
           <ThemeToggle />
-          <button className="app-meta app-meta--button" title={user?.email} onClick={onOpenSettings}>
-            {user?.name || user?.email}
-          </button>
+          <span className="app-meta" title={user?.email}>{user?.name || user?.email}</span>
           <button className="btn-logout" onClick={onLogout}>
             Sign out
           </button>

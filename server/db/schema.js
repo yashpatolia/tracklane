@@ -6,17 +6,7 @@ export const users = pgTable('users', {
   email: text('email').notNull().unique(),
   name: text('name').default(''),
   avatarUrl: text('avatar_url').default(''),
-  username: text('username').unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
-export const friendships = pgTable('friendships', {
-  id: serial('id').primaryKey(),
-  requesterId: integer('requester_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  addresseeId: integer('addressee_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
-  status: text('status').default('pending').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull(),
-  respondedAt: timestamp('responded_at'),
 });
 
 export const applications = pgTable('applications', {
