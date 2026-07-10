@@ -65,14 +65,16 @@ describe('ApplicationModal', () => {
     const onSave = vi.fn();
 
     render(
-      <ApplicationModal
-        initialData={null}
-        isEditing={false}
-        onSave={onSave}
-        onCancel={vi.fn()}
-        onDelete={vi.fn()}
-        existingApplications={[]}
-      />
+      <form onSubmit={(event) => event.preventDefault()}>
+        <ApplicationModal
+          initialData={null}
+          isEditing={false}
+          onSave={onSave}
+          onCancel={vi.fn()}
+          onDelete={vi.fn()}
+          existingApplications={[]}
+        />
+      </form>
     );
 
     await user.type(screen.getByLabelText('Company'), 'Acme');

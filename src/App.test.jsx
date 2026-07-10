@@ -116,4 +116,25 @@ describe('App shortcuts', () => {
     await user.click(screen.getByRole('button', { name: 'Show Archived' }));
     expect(screen.getByText('Acme')).toBeInTheDocument();
   });
+
+  it('does not persist a new entry when pressing Enter in job posting link', async () => {
+    const user = userEvent.setup();
+
+    render(
+      <App
+        initialUser={{ id: 1, email: 'test@example.com', name: 'Test User', avatarUrl: '' }}
+        initialApplications={[]}
+      />
+    );
+
+    await user.click(screen.getByRole('button', { name: '+ New Entry' }));
+    await user.type(screen.getByLabelText('Company'), 'Acme');
+    await user.type(screen.getByLabelText('Role'), 'Software Engineer Intern');
+    await user.click(screen.getByRole('button', { name: 'Summer' }));
+    await user.type(screen.getByLabelText('Job posting link'), 'https://example.com/jobs/1');
+    await user.keyboard('{Enter}');
+
+    expect(saveApplications).not.toHaveBeenCalled();
+    expect(screen.queryByText('Acme')).not.toBeInTheDocument();
+  });
 });
