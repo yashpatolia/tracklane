@@ -245,14 +245,14 @@ export default function ApplicationModal({ initialData, isEditing, existingAppli
 
         <div className="modal-actions">
           {isEditing && (
-            <button className="btn-delete" onClick={onDelete}>
+            <button type="button" className="btn-delete" onClick={onDelete}>
               Delete
             </button>
           )}
-          <button className="btn-cancel" onClick={onCancel}>
+          <button type="button" className="btn-cancel" onClick={onCancel}>
             Cancel
           </button>
-          <button className="btn-save" onClick={handleSave}>
+          <button type="button" className="btn-save" onClick={handleSave}>
             Save
           </button>
         </div>
