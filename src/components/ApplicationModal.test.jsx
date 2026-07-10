@@ -59,4 +59,29 @@ describe('ApplicationModal', () => {
     expect(alertSpy).toHaveBeenCalledWith('An application for this company and role already exists.');
     expect(onSave).not.toHaveBeenCalled();
   });
+
+  it('does not save when pressing Enter in the job posting link field', async () => {
+    const user = userEvent.setup();
+    const onSave = vi.fn();
+
+    render(
+      <ApplicationModal
+        initialData={null}
+        isEditing={false}
+        onSave={onSave}
+        onCancel={vi.fn()}
+        onDelete={vi.fn()}
+        existingApplications={[]}
+      />
+    );
+
+    await user.type(screen.getByLabelText('Company'), 'Acme');
+    await user.type(screen.getByLabelText('Role'), 'Software Engineer Intern');
+    await user.click(screen.getByRole('button', { name: 'Summer' }));
+    await user.type(screen.getByLabelText('Job posting link'), 'https://example.com/jobs/1');
+    await user.keyboard('{Enter}');
+
+    expect(onSave).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Save' })).toHaveAttribute('type', 'button');
+  });
 });
