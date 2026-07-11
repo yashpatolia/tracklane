@@ -36,6 +36,20 @@
       "when": 1783083430222,
       "tag": "0004_add_archived",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783083430223,
+      "tag": "0005_widen_user_id_and_username",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1783083430224,
+      "tag": "0006_add_friendships",
+      "breakpoints": true
     }
   ]
 }

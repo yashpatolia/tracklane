@@ -1,17 +1,18 @@
-import { pgTable, serial, integer, text, timestamp, boolean } from 'drizzle-orm/pg-core';
+import { bigint, pgTable, serial, text, timestamp, boolean } from 'drizzle-orm/pg-core';
 
 export const users = pgTable('users', {
-  id: serial('id').primaryKey(),
+  id: bigint('id', { mode: 'bigint' }).primaryKey(),
   googleId: text('google_id').notNull().unique(),
   email: text('email').notNull().unique(),
   name: text('name').default(''),
   avatarUrl: text('avatar_url').default(''),
+  username: text('username').unique(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 export const applications = pgTable('applications', {
   id: serial('id').primaryKey(),
-  userId: integer('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  userId: bigint('user_id', { mode: 'bigint' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
   company: text('company').notNull(),
   role: text('role').default(''),
   season: text('season').default('').notNull(),
@@ -31,4 +32,13 @@ export const applications = pgTable('applications', {
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
   notes: text('notes').default(''),
   archived: boolean('archived').default(false).notNull(),
+});
+
+export const friendships = pgTable('friendships', {
+  id: serial('id').primaryKey(),
+  requesterId: bigint('requester_id', { mode: 'bigint' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  addresseeId: bigint('addressee_id', { mode: 'bigint' }).notNull().references(() => users.id, { onDelete: 'cascade' }),
+  status: text('status').default('pending').notNull(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  respondedAt: timestamp('responded_at'),
 });
