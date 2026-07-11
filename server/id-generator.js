@@ -20,7 +20,10 @@ function computeNodeId() {
 const NODE_ID = computeNodeId();
 
 function waitForNextMillis(timestamp) {
-  // Real spin-wait: poll the clock until it advances past lastTimestamp.
+  // Date.now() has millisecond resolution, so a read that happens "later"
+  // in code can still be the same millisecond value as `timestamp`.
+  // Keep polling until the clock strictly advances to avoid ID collisions
+  // after sequence overflow within one millisecond window.
   let next = BigInt(Date.now()) - EPOCH_MS;
   while (next <= timestamp) {
     next = BigInt(Date.now()) - EPOCH_MS;

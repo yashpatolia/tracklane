@@ -4,13 +4,24 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('./api.js', () => ({
   fetchApplications: vi.fn().mockResolvedValue([]),
-  fetchMe: vi.fn().mockResolvedValue({ id: 1, email: 'test@example.com', name: 'Test User' }),
+  fetchMe: vi.fn().mockResolvedValue({ email: 'test@example.com', name: 'Test User', username: null }),
   logout: vi.fn().mockResolvedValue(undefined),
   saveApplications: vi.fn().mockResolvedValue(undefined),
 }));
 
+vi.mock('./friends-api.js', () => ({
+  acceptFriendRequest: vi.fn().mockResolvedValue({ ok: true }),
+  cancelFriendRequest: vi.fn().mockResolvedValue({ ok: true }),
+  claimUsername: vi.fn().mockResolvedValue({ username: 'test_user' }),
+  declineFriendRequest: vi.fn().mockResolvedValue({ ok: true }),
+  fetchFriends: vi.fn().mockResolvedValue({ incoming: [], outgoing: [], accepted: [] }),
+  searchUsername: vi.fn().mockResolvedValue({ username: 'friend' }),
+  sendFriendRequest: vi.fn().mockResolvedValue({ ok: true }),
+}));
+
 import App from './App.jsx';
 import { saveApplications } from './api.js';
+import { fetchFriends } from './friends-api.js';
 
 describe('App shortcuts', () => {
   beforeEach(() => {
@@ -39,6 +50,30 @@ describe('App shortcuts', () => {
     await user.keyboard('{Control>}{Alt>}{N}{/Alt}{/Control}');
 
     expect(screen.getByRole('heading', { name: 'Add Application' })).toBeInTheDocument();
+  });
+
+  it('shows the username gate until a username exists', async () => {
+    render(
+      <App
+        initialUser={{ email: 'test@example.com', name: 'Test User', avatarUrl: '', username: null }}
+        initialApplications={[]}
+      />
+    );
+
+    expect(screen.getByText('Set your username to find friends and send friend requests.')).toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Friends' })).not.toBeInTheDocument();
+  });
+
+  it('loads Friends when the user has a username', async () => {
+    render(
+      <App
+        initialUser={{ email: 'test@example.com', name: 'Test User', avatarUrl: '', username: 'test_user' }}
+        initialApplications={[]}
+      />
+    );
+
+    expect(await screen.findByRole('heading', { name: 'Friends' })).toBeInTheDocument();
+    expect(fetchFriends).toHaveBeenCalled();
   });
 
   it('does not backfill applied for draft entries', async () => {

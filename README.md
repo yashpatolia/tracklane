@@ -33,6 +33,37 @@ If you are running the app yourself:
 
 If Google sign-in is not configured in local development, the app falls back to a local login so you can still try the workflow end to end.
 
+## Running with Docker for development
+
+Use the dev compose file to run the frontend and backend in separate containers:
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+Then open `http://localhost:5173`.
+
+The dev stack uses the in-memory fallback store unless you provide `DATABASE_URL`.
+The Vite container proxies `/api` and `/auth` to the backend container through
+`VITE_API_PROXY_TARGET=http://server:3001`.
+
+Useful commands:
+
+```bash
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml logs -f server
+docker compose -f docker-compose.dev.yml logs -f client
+```
+
+## CI
+
+Pull requests and pushes to `master` run GitHub Actions CI:
+
+- `npm ci`
+- `npm test`
+- `npm run build`
+- production Docker image build
+
 ## Notes
 
 - The app is designed to work best as a daily tracking board, not just a record of past applications.

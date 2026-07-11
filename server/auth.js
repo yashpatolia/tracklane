@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db/index.js';
 import { getDevUserById, upsertDevUser } from './dev-store.js';
 import { users } from './db/schema.js';
+import { generate } from './id-generator.js';
 
 const hasGoogleAuth = Boolean(
   process.env.GOOGLE_CLIENT_ID &&
@@ -25,12 +26,12 @@ if (hasGoogleAuth) {
         if (existing) {
           return done(null, existing);
         }
-        const [created] = await db.insert(users).values({
+        const created = await insertUserWithGeneratedId({
           googleId: profile.id,
           email,
           name: profile.displayName ?? '',
           avatarUrl: profile.photos?.[0]?.value ?? '',
-        }).returning();
+        });
         done(null, created);
       } catch (err) {
         done(err);
@@ -39,7 +40,25 @@ if (hasGoogleAuth) {
   ));
 }
 
-passport.serializeUser((user, done) => done(null, user.id));
+function isPrimaryKeyCollision(err) {
+  return err?.code === '23505' && (!err.constraint || err.constraint === 'users_pkey');
+}
+
+export async function insertUserWithGeneratedId(values, attempts = 5) {
+  let lastError;
+  for (let attempt = 0; attempt < attempts; attempt += 1) {
+    try {
+      const [created] = await db.insert(users).values({ id: generate(), ...values }).returning();
+      return created;
+    } catch (err) {
+      if (!isPrimaryKeyCollision(err)) throw err;
+      lastError = err;
+    }
+  }
+  throw lastError ?? new Error('Could not generate a unique user id.');
+}
+
+passport.serializeUser((user, done) => done(null, String(user.id)));
 
 passport.deserializeUser(async (id, done) => {
   try {
@@ -47,7 +66,7 @@ passport.deserializeUser(async (id, done) => {
       const userId = Number(id);
       return done(null, getDevUserById(Number.isNaN(userId) ? id : userId));
     }
-    const [user] = await db.select().from(users).where(eq(users.id, id));
+    const [user] = await db.select().from(users).where(eq(users.id, BigInt(id)));
     done(null, user ?? false);
   } catch (err) {
     done(err);

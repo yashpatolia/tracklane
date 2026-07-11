@@ -540,6 +540,116 @@ body {
   border-color: var(--amber);
 }
 
+.username-gate {
+  margin: 0 32px 34px;
+  padding: 16px 18px;
+  border: 1px dashed var(--amber-dim);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, var(--amber-glow), transparent 55%),
+    var(--surface);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.username-gate span {
+  color: var(--text);
+  font-size: 13.5px;
+  line-height: 1.4;
+}
+
+.friends-view {
+  border-top: 1px solid var(--border);
+}
+
+.friends-grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 0.9fr) minmax(320px, 1.4fr) minmax(220px, 0.8fr);
+  gap: 16px;
+}
+
+.friend-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  min-width: 0;
+}
+
+.friend-card--split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+}
+
+.friend-search {
+  display: flex;
+  gap: 8px;
+}
+
+.friend-search input {
+  min-width: 0;
+  flex: 1;
+}
+
+.friend-row {
+  margin-top: 10px;
+  padding: 10px 11px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+.friend-row__actions {
+  display: flex;
+  gap: 8px;
+}
+
+.friend-empty,
+.friend-message,
+.form-help,
+.username-lock p {
+  color: var(--text-2);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.friend-message {
+  margin-top: 10px;
+}
+
+.friend-message--error {
+  color: var(--s-rejected);
+  grid-column: 1 / -1;
+}
+
+.username-lock {
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+
+.username-lock__value {
+  display: block;
+  color: var(--amber-2);
+  font-family: var(--mono);
+  font-size: 14px;
+  margin-bottom: 4px;
+}
+
+.modal--narrow {
+  width: 520px;
+}
+
 /* ── login ──────────────────────────────────── */
 .login-page {
   min-height: 100vh;
@@ -1324,6 +1434,9 @@ select option { background: var(--surface-2); color: var(--text); }
   .stat-card:nth-child(3) { border-right: 1px solid var(--border); }
   .stat-card:nth-child(2n) { border-right: none; }
   .main { padding: 20px 16px 64px; }
+  .username-gate { margin: 0 16px 28px; align-items: flex-start; flex-direction: column; }
+  .friends-grid { grid-template-columns: 1fr; }
+  .friend-card--split { grid-template-columns: 1fr; }
   .topnav__row { padding: 12px 16px; }
   .topnav__route { padding: 12px 16px 14px; }
   .topnav__right .app-meta { display: none; }

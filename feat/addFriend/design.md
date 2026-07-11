@@ -59,11 +59,34 @@ dependencies. A generator instance holds `lastTimestamp`/`sequence` in
 memory (module-level state, one per process — sufficient since there's one
 process per `NODE_ID`).
 
-**IDs are strings everywhere in JS**, never `Number` — a 63-bit value
-exceeds `Number.MAX_SAFE_INTEGER` (2^53). Postgres's `pg` driver already
-returns `bigint` columns as JS strings by default, so no driver
-configuration changes are needed; the generator itself returns a decimal
-string built from `BigInt` math.
+**Correction (verified against installed `drizzle-orm`/`pg` source during
+planning):** the original draft of this section assumed the `pg` driver
+returns `bigint` columns as JS strings by default. That's true of the raw
+`pg` driver, but **not** of Drizzle's `bigint(name, { mode: 'bigint' })`
+column type, which this schema uses — Drizzle explicitly converts driver
+values to native JS `BigInt` on read (`mapFromDriverValue`), and the `pg`
+driver's own `prepareValue` already stringifies any JS `BigInt` parameter
+on write, so no manual string conversion is needed for reads or writes at
+the DB layer.
+
+The actual constraint: a 63-bit ID exceeds `Number.MAX_SAFE_INTEGER`
+(2^53), so it must stay a native JS `BigInt` (or `.toString()` of one)
+rather than a `Number` anywhere it's held in JS. `JSON.stringify` throws on
+a raw `BigInt`, so it must never be placed directly into an HTTP JSON
+response. In practice this project's design already keeps every user ID
+server-side-only (usernames are the only thing exposed to clients — see
+sections 3-4), so the single place a `BigInt` id needs explicit
+string conversion is session serialization
+(`passport.serializeUser`/`deserializeUser`, since `express-session`
+JSON-serializes session data): serialize as `String(user.id)`, deserialize
+by converting back with `BigInt(id)` before querying. `/api/me` drops the
+`id` field from its response entirely (it was previously returned but
+unused by the frontend) rather than needing to stringify it, keeping the
+"internal ID never crosses the wire" property.
+
+The ID generator itself (`server/id-generator.js`) returns a native
+`BigInt` from `generate()` — not a string — since that's the type both
+Drizzle and `pg` expect for `bigint` columns.
 
 **Existence check + retry**: on user insert, the server generates an ID and
 attempts the insert. If Postgres rejects it with a unique-violation

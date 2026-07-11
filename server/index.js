@@ -4,11 +4,12 @@ import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { eq } from 'drizzle-orm';
+import { and, eq, isNull } from 'drizzle-orm';
 import { db, pool } from './db/index.js';
-import { applications } from './db/schema.js';
+import { applications, users } from './db/schema.js';
 import passport, { hasGoogleAuth, localDevLogin, requireAuth } from './auth.js';
-import { getDevApplications, replaceDevApplications } from './dev-store.js';
+import friendsRouter, { isValidUsername, normalizeUsername } from './friends.js';
+import { getDevApplications, replaceDevApplications, setDevUsername } from './dev-store.js';
 import { fetchJobPostingDetails, HttpError } from './job-posting/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -65,9 +66,43 @@ app.post('/auth/logout', (req, res) => {
 
 app.get('/api/me', (req, res) => {
   if (!req.isAuthenticated()) return res.json({ user: null });
-  const { id, email, name, avatarUrl } = req.user;
-  res.json({ user: { id, email, name, avatarUrl } });
+  const { email, name, avatarUrl, username } = req.user;
+  res.json({ user: { email, name, avatarUrl, username: username ?? null } });
 });
+
+app.put('/api/username', requireAuth, async (req, res, next) => {
+  try {
+    const username = normalizeUsername(req.body?.username);
+    if (!isValidUsername(username)) return res.status(400).json({ error: 'Username must be 3-20 characters and contain only lowercase letters, numbers, or underscores.' });
+
+    if (!process.env.DATABASE_URL) {
+      const result = setDevUsername(req.user.id, username);
+      if (!result.ok && result.error === 'already-set') return res.status(400).json({ error: 'Username is already set.' });
+      if (!result.ok && result.error === 'taken') return res.status(409).json({ error: 'Username is already taken.' });
+      req.user.username = result.user.username;
+      return res.json({ username: result.user.username });
+    }
+
+    if (req.user.username) return res.status(400).json({ error: 'Username is already set.' });
+    try {
+      const [updated] = await db
+        .update(users)
+        .set({ username })
+        .where(and(eq(users.id, req.user.id), isNull(users.username)))
+        .returning();
+      if (!updated) return res.status(400).json({ error: 'Username is already set.' });
+      req.user.username = updated.username;
+      return res.json({ username: updated.username });
+    } catch (err) {
+      if (err?.code === '23505') return res.status(409).json({ error: 'Username is already taken.' });
+      throw err;
+    }
+  } catch (err) {
+    next(err);
+  }
+});
+
+app.use('/api/friends', requireAuth, friendsRouter);
 
 app.get('/api/applications', requireAuth, async (req, res) => {
   if (!process.env.DATABASE_URL) {
