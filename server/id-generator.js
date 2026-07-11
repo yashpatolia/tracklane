@@ -7,7 +7,7 @@ const MAX_NODE_ID = (1n << NODE_BITS) - 1n; // 1023
 let lastTimestamp = -1n;
 let sequence = 0n;
 
-function currentNodeId() {
+function computeNodeId() {
   const raw = BigInt(process.env.NODE_ID || '0');
   if (raw < 0n || raw > MAX_NODE_ID) {
     throw new Error(`NODE_ID must be between 0 and ${MAX_NODE_ID}`);
@@ -15,15 +15,21 @@ function currentNodeId() {
   return raw;
 }
 
+// Parsed/validated once at module load time, since NODE_ID isn't expected
+// to change at runtime.
+const NODE_ID = computeNodeId();
+
 function waitForNextMillis(timestamp) {
-  // For real-time scenarios, spin-wait until clock advances
-  // For fake timers in tests, this will work because setImmediate
-  // yields control to the event loop which advances fake time
-  return timestamp + 1n;
+  // Real spin-wait: poll the clock until it advances past lastTimestamp.
+  let next = BigInt(Date.now()) - EPOCH_MS;
+  while (next <= timestamp) {
+    next = BigInt(Date.now()) - EPOCH_MS;
+  }
+  return next;
 }
 
 export function generate() {
-  const nodeId = currentNodeId();
+  const nodeId = NODE_ID;
   let timestamp = BigInt(Date.now()) - EPOCH_MS;
 
   if (timestamp === lastTimestamp) {

@@ -61,15 +61,48 @@ describe('id-generator', () => {
   });
 
   it('rolls over to the next millisecond when the sequence overflows within one ms', async () => {
-    vi.useFakeTimers();
-    vi.setSystemTime(EPOCH_MS + 2000);
+    // Uses real wall-clock time deliberately: waitForNextMillis does a real
+    // busy-wait poll of Date.now(), which would hang forever against a
+    // frozen fake clock (nothing can advance it from within the same
+    // synchronous call). No sleep/setTimeout needed — the busy-wait itself
+    // provides the wait once we cross into the next real millisecond.
     const { generate } = await import('./id-generator.js');
 
-    for (let i = 0; i < 4096; i++) generate();
-    const overflowId = generate();
-    const timestampBits = overflowId >> 22n;
-    expect(timestampBits).toBe(2001n);
-    const sequenceBits = overflowId & 0xfffn;
+    // Under system load (e.g. the full suite running many test files at
+    // once), the synchronous burst of 4096 calls below can occasionally
+    // get preempted and spill past a millisecond boundary on its own
+    // (via the plain "else" reset branch) before reaching a true sequence
+    // overflow. Retry a few times so the assertion is about the busy-wait
+    // path specifically, not a flake under contention.
+    let timestampBits;
+    let sequenceBits;
+    let initialTimestampBits;
+    let attempts = 0;
+    do {
+      attempts += 1;
+
+      // Align to the start of a fresh real millisecond first, so the
+      // synchronous burst below has (close to) a full millisecond of
+      // wall-clock budget to fit 4096 calls in before crossing the
+      // boundary on its own.
+      const startMs = Date.now();
+      while (Date.now() === startMs) {
+        // busy wait for the millisecond to tick over
+      }
+
+      const initialId = generate();
+      initialTimestampBits = initialId >> 22n;
+
+      // Generate enough additional IDs in the same real millisecond to
+      // overflow the 12-bit sequence (4096 total, including initialId).
+      for (let i = 0; i < 4095; i++) generate();
+
+      const overflowId = generate();
+      timestampBits = overflowId >> 22n;
+      sequenceBits = overflowId & 0xfffn;
+    } while (sequenceBits !== 0n && attempts < 10);
+
+    expect(timestampBits).toBeGreaterThan(initialTimestampBits);
     expect(sequenceBits).toBe(0n);
   });
 });
