@@ -1,0 +1,35 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: tracklane-dev:latest
+    command: npm run dev:server
+    ports:
+      - "3001:3001"
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      CLIENT_URL: http://localhost:5173
+      SESSION_SECRET: tracklane-dev-session-secret
+      NODE_ID: 0
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: tracklane-dev:latest
+    command: npm run dev:client -- --host 0.0.0.0
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_PROXY_TARGET: http://server:3001
+      CHOKIDAR_USEPOLLING: "true"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    depends_on:
+      - server

@@ -3,9 +3,10 @@ import Pipeline from './Pipeline.jsx';
 
 const NAV_LINKS = [
   { href: '#applications', label: 'Applications' },
+  { href: '#friends', label: 'Friends' },
 ];
 
-export default function Header({ user, onLogout, applications, activeFilter, onFilterChange }) {
+export default function Header({ user, onLogout, onOpenSettings, applications, activeFilter, onFilterChange }) {
   return (
     <header className="topnav">
       <div className="topnav__row">
@@ -28,6 +29,9 @@ export default function Header({ user, onLogout, applications, activeFilter, onF
         <div className="topnav__right">
           <ThemeToggle />
           <span className="app-meta" title={user?.email}>{user?.name || user?.email}</span>
+          <button className="btn-logout" onClick={onOpenSettings}>
+            Settings
+          </button>
           <button className="btn-logout" onClick={onLogout}>
             Sign out
           </button>

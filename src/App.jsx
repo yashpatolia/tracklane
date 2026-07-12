@@ -2,7 +2,9 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { fetchApplications, fetchMe, logout, saveApplications } from './api.js';
 import Header from './components/Header.jsx';
 import LoginPanel from './components/LoginPanel.jsx';
+import FriendsView from './components/FriendsView.jsx';
 import { REJECTED_SENTINEL } from './components/Pipeline.jsx';
+import SettingsModal from './components/SettingsModal.jsx';
 import Stats from './components/Stats.jsx';
 import ApplicationsTable from './components/ApplicationsTable.jsx';
 import ApplicationModal from './components/ApplicationModal.jsx';
@@ -20,6 +22,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const [loaded, setLoaded] = useState(initialApplications !== null);
   const [editingIndex, setEditingIndex] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
   const importInputRef = useRef(null);
@@ -81,6 +84,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const openAdd = () => { setEditingIndex(null); setModalOpen(true); };
   const openEdit = (index) => { setEditingIndex(index); setModalOpen(true); };
   const closeModal = () => setModalOpen(false);
+  const handleUsernameSet = (username) => setUser((current) => ({ ...current, username }));
 
   const persist = async (next) => {
     setApplications(next);
@@ -185,6 +189,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
       <Header
         user={user}
         onLogout={handleLogout}
+        onOpenSettings={() => setSettingsOpen(true)}
         applications={activeApplications}
         activeFilter={statusFilter}
         onFilterChange={setStatusFilter}
@@ -236,6 +241,15 @@ export default function App({ initialUser = null, initialApplications = null }) 
             />
           )}
         </main>
+        {!user.username && (
+          <section className="username-gate" id="friends" aria-label="Username required for friends">
+            <span>Set your username to find friends and send friend requests.</span>
+            <button type="button" className="btn-add" onClick={() => setSettingsOpen(true)}>
+              Set username
+            </button>
+          </section>
+        )}
+        {user.username && <FriendsView />}
       </div>
       {modalOpen && (
         <ApplicationModal
@@ -246,6 +260,13 @@ export default function App({ initialUser = null, initialApplications = null }) 
           onSave={handleSave}
           onCancel={closeModal}
           onDelete={handleDeleteEditing}
+        />
+      )}
+      {settingsOpen && (
+        <SettingsModal
+          user={user}
+          onClose={() => setSettingsOpen(false)}
+          onUsernameSet={handleUsernameSet}
         />
       )}
     </div>

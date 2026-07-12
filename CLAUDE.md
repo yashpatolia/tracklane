@@ -21,6 +21,14 @@ The `POST /api/job-posting` endpoint fetches arbitrary user-supplied URLs server
 - **Database**: Postgres via `drizzle-orm`. Schema in `server/db/schema.js`. Falls back to an in-memory store (`server/dev-store.js`) per-process if `DATABASE_URL` is unset, so the app runs without Postgres for quick UI iteration (data doesn't persist across restarts in that mode).
 - **Tests**: Vitest (`npm test`). Covers `src/utils/applications.js`, some components, and `server/db/schema.js`.
 
+## Design docs
+
+Durable architecture and feature docs live under `docs/architecture/`. For
+cross-cutting features, add focused docs under `docs/architecture/features/`
+instead of creating temporary source-level feature folders or one giant markdown
+file. Implementation plans can live under `docs/superpowers/plans/`, but those
+are historical execution artifacts, not the canonical design reference.
+
 ## Running locally
 
 ```
