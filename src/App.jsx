@@ -25,6 +25,7 @@ export default function App({ initialUser = null, initialApplications = null }) 
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState(null);
   const [showArchived, setShowArchived] = useState(false);
+  const [view, setView] = useState('applications');
   const importInputRef = useRef(null);
 
   useEffect(() => {
@@ -193,63 +194,72 @@ export default function App({ initialUser = null, initialApplications = null }) 
         applications={activeApplications}
         activeFilter={statusFilter}
         onFilterChange={setStatusFilter}
+        view={view}
+        onViewChange={setView}
       />
 
       <div className="page">
-        <main className="main" id="applications">
-          <Stats applications={activeApplications} />
-          <div className="toolbar">
-            <h2>
-              Applications
-              {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
-            </h2>
-            <div className="toolbar__actions">
-              <button
-                className={`btn-secondary${showArchived ? ' active' : ''}`}
-                aria-pressed={showArchived}
-                onClick={() => setShowArchived((v) => !v)}
-              >
-                {showArchived ? 'Hide Archived' : 'Show Archived'}
-              </button>
-              <button className="btn-secondary" onClick={handleExport}>
-                Export CSV
-              </button>
-              <button className="btn-secondary" onClick={handleImportClick}>
-                Import CSV
-              </button>
-              <input
-                ref={importInputRef}
-                type="file"
-                accept=".csv,text/csv"
-                onChange={handleImportFile}
-                style={{ display: 'none' }}
-              />
-              <button className="btn-add" onClick={openAdd}>
-                + New Entry
-              </button>
+        {view === 'applications' && (
+          <main className="main">
+            <Stats applications={activeApplications} />
+            <div className="toolbar">
+              <h2>
+                Applications
+                {statusFilter && <span className="filter-badge">{statusFilter === REJECTED_SENTINEL ? 'Rejected / Withdrawn' : statusFilter}</span>}
+              </h2>
+              <div className="toolbar__actions">
+                <button
+                  className={`btn-secondary${showArchived ? ' active' : ''}`}
+                  aria-pressed={showArchived}
+                  onClick={() => setShowArchived((v) => !v)}
+                >
+                  {showArchived ? 'Hide Archived' : 'Show Archived'}
+                </button>
+                <button className="btn-secondary" onClick={handleExport}>
+                  Export CSV
+                </button>
+                <button className="btn-secondary" onClick={handleImportClick}>
+                  Import CSV
+                </button>
+                <input
+                  ref={importInputRef}
+                  type="file"
+                  accept=".csv,text/csv"
+                  onChange={handleImportFile}
+                  style={{ display: 'none' }}
+                />
+                <button className="btn-add" onClick={openAdd}>
+                  + New Entry
+                </button>
+              </div>
             </div>
-          </div>
-          {loaded && (
-            <ApplicationsTable
-              applications={filteredApplications}
-              onEdit={handleEdit}
-              onDelete={handleQuickDelete}
-              onAdvanceStatus={handleAdvanceStatus}
-              onArchive={handleToggleArchive}
-              activeFilterLabel={activeFilterLabel}
-              onFilterClear={() => setStatusFilter(null)}
-            />
-          )}
-        </main>
-        {!user.username && (
-          <section className="username-gate" id="friends" aria-label="Username required for friends">
-            <span>Set your username to find friends and send friend requests.</span>
-            <button type="button" className="btn-add" onClick={() => setSettingsOpen(true)}>
-              Set username
-            </button>
-          </section>
+            {loaded && (
+              <ApplicationsTable
+                applications={filteredApplications}
+                onEdit={handleEdit}
+                onDelete={handleQuickDelete}
+                onAdvanceStatus={handleAdvanceStatus}
+                onArchive={handleToggleArchive}
+                activeFilterLabel={activeFilterLabel}
+                onFilterClear={() => setStatusFilter(null)}
+              />
+            )}
+          </main>
         )}
-        {user.username && <FriendsView />}
+        {view === 'friends' && (
+          !user.username ? (
+            <main className="main">
+              <section className="username-gate" aria-label="Username required for friends">
+                <span>Set your username to find friends and send friend requests.</span>
+                <button type="button" className="btn-add" onClick={() => setSettingsOpen(true)}>
+                  Set username
+                </button>
+              </section>
+            </main>
+          ) : (
+            <FriendsView />
+          )
+        )}
       </div>
       {modalOpen && (
         <ApplicationModal

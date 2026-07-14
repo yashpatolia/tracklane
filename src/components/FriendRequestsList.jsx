@@ -27,9 +27,9 @@ export default function FriendRequestsList({ incoming, outgoing, onChanged }) {
   };
 
   return (
-    <section className="friend-card friend-card--split">
+    <section className="friend-card requests-card">
       {error && <p className="friend-message friend-message--error" role="alert">{error}</p>}
-      <div>
+      <div className="requests-card__group">
         <span className="form-section__title">Incoming requests</span>
         {incoming.length === 0 && <p className="friend-empty">No incoming requests.</p>}
         {incoming.map((request) => (
@@ -47,7 +47,7 @@ export default function FriendRequestsList({ incoming, outgoing, onChanged }) {
         ))}
       </div>
 
-      <div>
+      <div className="requests-card__group requests-card__group--divider">
         <span className="form-section__title">Sent requests</span>
         {outgoing.length === 0 && <p className="friend-empty">No sent requests.</p>}
         {outgoing.map((request) => (

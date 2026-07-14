@@ -2,11 +2,11 @@ import ThemeToggle from './ThemeToggle.jsx';
 import Pipeline from './Pipeline.jsx';
 
 const NAV_LINKS = [
-  { href: '#applications', label: 'Applications' },
-  { href: '#friends', label: 'Friends' },
+  { view: 'applications', label: 'Applications' },
+  { view: 'friends', label: 'Friends' },
 ];
 
-export default function Header({ user, onLogout, onOpenSettings, applications, activeFilter, onFilterChange }) {
+export default function Header({ user, onLogout, onOpenSettings, applications, activeFilter, onFilterChange, view, onViewChange }) {
   return (
     <header className="topnav">
       <div className="topnav__row">
@@ -20,9 +20,15 @@ export default function Header({ user, onLogout, onOpenSettings, applications, a
           </div>
           <nav className="topnav__links" aria-label="Sections">
             {NAV_LINKS.map((link) => (
-              <a key={link.href} className="topnav__link" href={link.href}>
+              <button
+                key={link.view}
+                type="button"
+                className="topnav__link"
+                aria-current={view === link.view ? 'page' : undefined}
+                onClick={() => onViewChange(link.view)}
+              >
                 {link.label}
-              </a>
+              </button>
             ))}
           </nav>
         </div>
@@ -37,14 +43,16 @@ export default function Header({ user, onLogout, onOpenSettings, applications, a
           </button>
         </div>
       </div>
-      <div className="topnav__route">
-        <Pipeline
-          applications={applications}
-          activeFilter={activeFilter}
-          onFilterChange={onFilterChange}
-          compact
-        />
-      </div>
+      {view === 'applications' && (
+        <div className="topnav__route">
+          <Pipeline
+            applications={applications}
+            activeFilter={activeFilter}
+            onFilterChange={onFilterChange}
+            compact
+          />
+        </div>
+      )}
     </header>
   );
 }
