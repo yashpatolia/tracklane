@@ -53,6 +53,7 @@ describe('App shortcuts', () => {
   });
 
   it('shows the username gate until a username exists', async () => {
+    const user = userEvent.setup();
     render(
       <App
         initialUser={{ email: 'test@example.com', name: 'Test User', avatarUrl: '', username: null }}
@@ -60,17 +61,22 @@ describe('App shortcuts', () => {
       />
     );
 
+    await user.click(screen.getByRole('button', { name: 'Friends' }));
+
     expect(screen.getByText('Set your username to find friends and send friend requests.')).toBeInTheDocument();
     expect(screen.queryByRole('heading', { name: 'Friends' })).not.toBeInTheDocument();
   });
 
   it('loads Friends when the user has a username', async () => {
+    const user = userEvent.setup();
     render(
       <App
         initialUser={{ email: 'test@example.com', name: 'Test User', avatarUrl: '', username: 'test_user' }}
         initialApplications={[]}
       />
     );
+
+    await user.click(screen.getByRole('button', { name: 'Friends' }));
 
     expect(await screen.findByRole('heading', { name: 'Friends' })).toBeInTheDocument();
     expect(fetchFriends).toHaveBeenCalled();
